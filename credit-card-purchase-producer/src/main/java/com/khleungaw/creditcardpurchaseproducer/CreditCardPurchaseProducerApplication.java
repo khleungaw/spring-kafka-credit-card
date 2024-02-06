@@ -1,0 +1,13 @@
+package com.khleungaw.creditcardpurchaseproducer;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CreditCardPurchaseProducerApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CreditCardPurchaseProducerApplication.class, args);
+	}
+
+}
