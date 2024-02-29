@@ -3,6 +3,7 @@ package com.khleungaw.creditcardcardproducer;
 import com.khleungaw.creditcardcardproducer.service.CardNoService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -17,15 +18,20 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class CreditCardHandler {
 
+	@Value(value = "${limitTopicName}")
+	private String limitTopicName;
+
+	@Value(value = "${balanceTopicName}")
+	private String balanceTopicName;
+
 	private final Logger logger = LogManager.getLogger();
-	private final KafkaTemplate<String, String> kafkaTemplate;
+	private final KafkaTemplate<String, BigDecimal> balanceKafkaTemplate;
+	private final KafkaTemplate<String, BigDecimal> limitKafkaTemplate;
 	private final CardNoService cardNoService;
 
-	private static final String BALANCE_TOPIC = "balances";
-	private static final String LIMIT_TOPIC = "limits";
-
-	public CreditCardHandler(KafkaTemplate<String, String> kafkaTemplate, CardNoService cardNoService) {
-		this.kafkaTemplate = kafkaTemplate;
+	public CreditCardHandler(KafkaTemplate<String, BigDecimal> balanceKafkaTemplate, KafkaTemplate<String, BigDecimal> limitKafkaTemplate, CardNoService cardNoService) {
+		this.balanceKafkaTemplate = balanceKafkaTemplate;
+		this.limitKafkaTemplate = limitKafkaTemplate;
 		this.cardNoService = cardNoService;
 	}
 
@@ -42,8 +48,8 @@ public class CreditCardHandler {
 				}
 
 				String cardNo = cardNoService.generateCardNo();
-				CompletableFuture<SendResult<String, String>> limitFuture = kafkaTemplate.send(LIMIT_TOPIC, cardNo, limitString).toCompletableFuture();
-				CompletableFuture<SendResult<String, String>> balanceFuture = kafkaTemplate.send(BALANCE_TOPIC, cardNo, "0").toCompletableFuture();
+				CompletableFuture<SendResult<String, BigDecimal>> limitFuture = limitKafkaTemplate.send(limitTopicName, cardNo, new BigDecimal(limitString)).toCompletableFuture();
+				CompletableFuture<SendResult<String, BigDecimal>> balanceFuture = balanceKafkaTemplate.send(balanceTopicName, cardNo, BigDecimal.ZERO).toCompletableFuture();
 
 				return Mono.fromFuture(CompletableFuture.allOf(limitFuture, balanceFuture).thenApply(v -> limitFuture.join()));
 			}).flatMap(sendResult -> {

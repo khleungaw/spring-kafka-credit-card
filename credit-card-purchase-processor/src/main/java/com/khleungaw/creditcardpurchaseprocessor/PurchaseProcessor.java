@@ -14,6 +14,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,21 @@ import java.math.BigDecimal;
 
 @Component
 public class PurchaseProcessor {
+
+    @Value(value = "${balanceTopicName}")
+    private String balanceTopicName;
+
+    @Value(value = "${limitTopicName}")
+    private String limitTopicName;
+
+    @Value(value = "${purchaseTopicName}")
+    private String purchaseTopicName;
+
+    @Value(value = "${acceptedPurchaseTopicName}")
+    private String acceptedPurchaseTopicName;
+
+    @Value(value = "${rejectedPurchaseTopicName}")
+    private String rejectedPurchaseTopicName;
 
     private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
     private static final JsonSerde<PurchaseWithBalance> PURCHASE_WITH_BALANCE_SERDE = new JsonSerde<>();
@@ -36,9 +52,9 @@ public class PurchaseProcessor {
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
         // Prepare stream from purchases, tables from balances and limits
-        KTable<String, String> creditCardBalanceTable = streamsBuilder.table("balances", Consumed.with(STRING_SERDE, STRING_SERDE));
-        KTable<String, String> creditCardLimitTable = streamsBuilder.table("limits", Consumed.with(STRING_SERDE, STRING_SERDE));
-        KStream<String, Purchase> purchaseStream = streamsBuilder.stream("purchases", Consumed.with(STRING_SERDE, purchaseJsonSerde));
+        KTable<String, String> creditCardBalanceTable = streamsBuilder.table(balanceTopicName, Consumed.with(STRING_SERDE, STRING_SERDE));
+        KTable<String, String> creditCardLimitTable = streamsBuilder.table(limitTopicName, Consumed.with(STRING_SERDE, STRING_SERDE));
+        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(purchaseTopicName, Consumed.with(STRING_SERDE, purchaseJsonSerde));
         purchaseStream.foreach((cardNo, purchase) -> logger.info("Received purchase: {}", purchase));
 
         // Intermediate streams
@@ -48,10 +64,9 @@ public class PurchaseProcessor {
         KStream<String, PurchaseWithBalanceAndLimit> purchaseWithBalanceAndLimitStream = purchaseWithBalanceStream
             .leftJoin(creditCardLimitTable, PurchaseWithBalanceAndLimit::new, Joined.with(STRING_SERDE, PURCHASE_WITH_BALANCE_SERDE, STRING_SERDE));
 
-        purchaseWithBalanceAndLimitStream.foreach((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Joined purchase: {}", purchaseWithBalanceAndLimit));
-
         // Split the stream into two branches based on new balance
-        purchaseWithBalanceAndLimitStream.split()
+        purchaseWithBalanceAndLimitStream.peek((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Joined purchase: {}", purchaseWithBalanceAndLimit))
+            .split()
             .branch((cardNo, purchaseWithBalanceAndLimit) -> {
                 if (purchaseWithBalanceAndLimit.getBalanceAmount() == null || purchaseWithBalanceAndLimit.getLimitAmount() == null) {
                     logger.warn("Unknown card in purchase: {}", purchaseWithBalanceAndLimit);
@@ -64,12 +79,12 @@ public class PurchaseProcessor {
                 .mapValues((purchaseWithBalanceAndLimit) -> {
                     logger.info("Accepted purchase: {}", purchaseWithBalanceAndLimit);
                     return new Purchase(purchaseWithBalanceAndLimit);
-                }).to("accepted-purchases", Produced.with(STRING_SERDE, purchaseJsonSerde))))
+                }).to(acceptedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseJsonSerde))))
             .defaultBranch(Branched.withConsumer(stream-> stream
                 .mapValues((purchaseWithBalanceAndLimit) -> {
                     logger.info("Rejected purchase: {}", purchaseWithBalanceAndLimit);
                     return new Purchase(purchaseWithBalanceAndLimit);
-                }).to("rejected-purchases", Produced.with(STRING_SERDE, purchaseJsonSerde))));
+                }).to(rejectedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseJsonSerde))));
     }
 
 }

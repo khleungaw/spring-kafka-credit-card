@@ -20,6 +20,9 @@ public class AcceptedPurchaseProcessor {
     @Value(value = "${balanceAdjustmentTopicName}")
     private String balanceAdjustmentTopicName;
 
+    @Value(value = "${purchaseTopicName}")
+    private String purchaseTopicName;
+
     private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
     private final Logger logger;
     private final JsonSerde<Purchase> purchaseJsonSerde;
@@ -32,19 +35,17 @@ public class AcceptedPurchaseProcessor {
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
         // Prepare stream from accepted-purchases
-        KStream<String, Purchase> purchaseStream = streamsBuilder.stream("purchases", Consumed.with(STRING_SERDE, purchaseJsonSerde));
-        purchaseStream.foreach((cardNo, purchase) -> logger.info("Received accepted purchase: {}", purchase));
+        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(purchaseTopicName, Consumed.with(STRING_SERDE, purchaseJsonSerde));
 
         // Convert purchases to balance adjustments
-        KStream<String, BalanceAdjustment> balanceAdjustmentStream = purchaseStream.mapValues(purchase -> {
+        purchaseStream.mapValues(purchase -> {
             BalanceAdjustment balanceAdjustment = new BalanceAdjustment();
             balanceAdjustment.setCardNo(purchase.getCardNo());
             balanceAdjustment.setAmount(purchase.getAmount());
             balanceAdjustment.setTimestamp(purchase.getTimestamp());
             return balanceAdjustment;
-        });
-
-        balanceAdjustmentStream.to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, new JsonSerde<>(BalanceAdjustment.class)));
+        }).peek((cardNo, purchase)->logger.info("Received accepted purchase: {}", purchase))
+        .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, new JsonSerde<>(BalanceAdjustment.class)));
     }
 
 }

@@ -3,7 +3,6 @@ package com.khleungaw.creditcardcardproducer.config;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,11 +12,7 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 
 import java.util.Map;
 
-import static org.apache.kafka.streams.StreamsConfig.APPLICATION_ID_CONFIG;
-import static org.apache.kafka.streams.StreamsConfig.APPLICATION_SERVER_CONFIG;
-import static org.apache.kafka.streams.StreamsConfig.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.streams.StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG;
-import static org.apache.kafka.streams.StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG;
+import static org.apache.kafka.streams.StreamsConfig.*;
 
 @Configuration
 public class KafkaStreamConfig {
@@ -39,14 +34,14 @@ public class KafkaStreamConfig {
 		return new KafkaStreamsConfiguration(Map.of(
 			APPLICATION_ID_CONFIG, "credit-card-card-producer",
 			BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress,
-			DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName(),
-			DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName(),
+			DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class,
+			DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class,
 			APPLICATION_SERVER_CONFIG, String.format("localhost:%s", port)
 		));
 	}
 
 	@Bean
-	public KafkaStreams kakfaStreams() {
+	public KafkaStreams kafkaStreams() {
 		StreamsBuilder streamsBuilder = new StreamsBuilder();
 		streamsBuilder.table(limitTopicName, Materialized.as(storeName));
 		KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(), kStreamsConfig().asProperties());
