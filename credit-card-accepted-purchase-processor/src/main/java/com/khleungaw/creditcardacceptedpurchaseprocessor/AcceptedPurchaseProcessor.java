@@ -1,5 +1,6 @@
 package com.khleungaw.creditcardacceptedpurchaseprocessor;
 
+import com.khleungaw.creditcardacceptedpurchaseprocessor.config.PropertiesConfig;
 import com.khleungaw.creditcardacceptedpurchaseprocessor.model.BalanceAdjustment;
 import com.khleungaw.creditcardacceptedpurchaseprocessor.model.Purchase;
 import org.apache.kafka.common.serialization.Serdes;
@@ -10,28 +11,26 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AcceptedPurchaseProcessor {
 
-    @Value(value = "${balanceAdjustmentTopicName}")
-    private String balanceAdjustmentTopicName;
-
-    @Value(value = "${acceptedPurchaseTopicName}")
-    private String acceptedPurchaseTopicName;
-
     private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
+
     private final Logger logger;
+    private final String acceptedPurchaseTopicName;
+    private final String balanceAdjustmentTopicName;
     private final JsonSerde<Purchase> purchaseSerde;
     private final JsonSerde<BalanceAdjustment> balanceAdjustmentSerde;
 
-    public AcceptedPurchaseProcessor(JsonSerde<Purchase> purchaseSerde, JsonSerde<BalanceAdjustment> balanceAdjustmentSerde) {
+    public AcceptedPurchaseProcessor(PropertiesConfig propertiesConfig, JsonSerde<Purchase> purchaseSerde, JsonSerde<BalanceAdjustment> balanceAdjustmentSerde) {
         this.logger = LogManager.getLogger();
-        this.purchaseSerde = purchaseSerde;
+        this.acceptedPurchaseTopicName = propertiesConfig.getAcceptedPurchaseTopicName();
+        this.balanceAdjustmentTopicName = propertiesConfig.getBalanceAdjustmentTopicName();
         this.balanceAdjustmentSerde = balanceAdjustmentSerde;
+        this.purchaseSerde = purchaseSerde;
     }
 
     @Autowired

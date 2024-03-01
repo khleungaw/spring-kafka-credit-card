@@ -1,9 +1,9 @@
 package com.khleungaw.creditcardcardproducer;
 
+import com.khleungaw.creditcardcardproducer.config.PropertiesConfig;
 import com.khleungaw.creditcardcardproducer.service.CardNoService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -18,18 +18,17 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class CreditCardHandler {
 
-	@Value(value = "${limitTopicName}")
-	private String limitTopicName;
-
-	@Value(value = "${balanceTopicName}")
-	private String balanceTopicName;
-
-	private final Logger logger = LogManager.getLogger();
+	private final Logger logger;
+	private final String balanceTopicName;
+	private final String limitTopicName;
 	private final KafkaTemplate<String, BigDecimal> balanceKafkaTemplate;
 	private final KafkaTemplate<String, BigDecimal> limitKafkaTemplate;
 	private final CardNoService cardNoService;
 
-	public CreditCardHandler(KafkaTemplate<String, BigDecimal> balanceKafkaTemplate, KafkaTemplate<String, BigDecimal> limitKafkaTemplate, CardNoService cardNoService) {
+	public CreditCardHandler(PropertiesConfig propertiesConfig, KafkaTemplate<String, BigDecimal> balanceKafkaTemplate, KafkaTemplate<String, BigDecimal> limitKafkaTemplate, CardNoService cardNoService) {
+		this.logger = LogManager.getLogger();
+		this.balanceTopicName = propertiesConfig.getBalanceTopicName();
+		this.limitTopicName = propertiesConfig.getLimitTopicName();
 		this.balanceKafkaTemplate = balanceKafkaTemplate;
 		this.limitKafkaTemplate = limitKafkaTemplate;
 		this.cardNoService = cardNoService;

@@ -1,10 +1,10 @@
 package com.khleungaw.creditcardpurchaseproducer;
 
+import com.khleungaw.creditcardpurchaseproducer.config.PropertiesConfig;
 import com.khleungaw.creditcardpurchaseproducer.model.Purchase;
 import com.khleungaw.creditcardpurchaseproducer.model.PurchaseDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,14 +17,14 @@ import reactor.core.publisher.Mono;
 @Component
 public class PurchaseHandler {
 
-    @Value(value = "${purchaseTopicName}")
-    private String purchaseTopicName;
 
     private final Logger logger;
+    private final String purchaseTopicName;
     private final KafkaTemplate<String, Purchase> kafkaTemplate;
 
-    public PurchaseHandler(KafkaTemplate<String, Purchase> kafkaTemplate) {
+    public PurchaseHandler(PropertiesConfig propertiesConfig, KafkaTemplate<String, Purchase> kafkaTemplate) {
         this.logger = LogManager.getLogger();
+        this.purchaseTopicName = propertiesConfig.getPurchaseTopicName();
         this.kafkaTemplate = kafkaTemplate;
     }
 

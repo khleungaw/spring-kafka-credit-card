@@ -17,17 +17,17 @@ import static org.apache.kafka.streams.StreamsConfig.*;
 @Configuration
 public class KafkaStreamConfig {
 
-	@Value(value = "${spring.kafka.bootstrap-servers}")
-	private String bootstrapAddress;
-
 	@Value(value = "${server.port}")
 	private String port;
 
-	@Value(value = "${limitTopicName}")
-	private String limitTopicName;
+	@Value(value = "${spring.kafka.bootstrap-servers}")
+	private String bootstrapAddress;
 
-	@Value(value = "${storeName}")
+	@Value(value = "${credit-card.cardNoStoreName}")
 	private String storeName;
+
+	@Value(value = "${credit-card.limitTopicName}")
+	private String limitTopicName;
 
 	@Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
 	public KafkaStreamsConfiguration kStreamsConfig() {

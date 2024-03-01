@@ -1,20 +1,15 @@
 package com.khleungaw.creditcardpurchaseprocessor;
 
+import com.khleungaw.creditcardpurchaseprocessor.config.PropertiesConfig;
 import com.khleungaw.creditcardpurchaseprocessor.model.Purchase;
 import com.khleungaw.creditcardpurchaseprocessor.model.PurchaseWithBalance;
 import com.khleungaw.creditcardpurchaseprocessor.model.PurchaseWithBalanceAndLimit;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.kstream.Branched;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.Joined;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KTable;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
 
@@ -23,29 +18,24 @@ import java.math.BigDecimal;
 @Component
 public class PurchaseProcessor {
 
-    @Value(value = "${balanceTopicName}")
-    private String balanceTopicName;
-
-    @Value(value = "${limitTopicName}")
-    private String limitTopicName;
-
-    @Value(value = "${purchaseTopicName}")
-    private String purchaseTopicName;
-
-    @Value(value = "${acceptedPurchaseTopicName}")
-    private String acceptedPurchaseTopicName;
-
-    @Value(value = "${rejectedPurchaseTopicName}")
-    private String rejectedPurchaseTopicName;
-
     private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
     private static final JsonSerde<PurchaseWithBalance> PURCHASE_WITH_BALANCE_SERDE = new JsonSerde<>();
 
     private final Logger logger;
+    private final String acceptedPurchaseTopicName;
+    private final String balanceTopicName;
+    private final String limitTopicName;
+    private final String rejectedPurchaseTopicName;
+    private final String purchaseTopicName;
     private final JsonSerde<Purchase> purchaseJsonSerde;
 
-    public PurchaseProcessor(JsonSerde<Purchase> purchaseSerde) {
+    public PurchaseProcessor(PropertiesConfig propertiesConfig, JsonSerde<Purchase> purchaseSerde) {
         this.logger = LogManager.getLogger();
+        this.acceptedPurchaseTopicName = propertiesConfig.getAcceptedPurchaseTopicName();
+        this.balanceTopicName = propertiesConfig.getBalanceTopicName();
+        this.limitTopicName = propertiesConfig.getLimitTopicName();
+        this.rejectedPurchaseTopicName = propertiesConfig.getRejectedPurchaseTopicName();
+        this.purchaseTopicName = propertiesConfig.getPurchaseTopicName();
         this.purchaseJsonSerde = purchaseSerde;
     }
 

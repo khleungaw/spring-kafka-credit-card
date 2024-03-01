@@ -1,20 +1,19 @@
 package com.khleungaw.creditcardcardproducer.service;
 
+import com.khleungaw.creditcardcardproducer.config.PropertiesConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CardNoService {
 
-	@Value(value = "${storeName}")
-	private String storeName;
-
+	private final String storeName;
 	private final KafkaStreams kafkaStreams;
 
-	public CardNoService(KafkaStreams kafkaStreams) {
+	public CardNoService(PropertiesConfig propertiesConfig, KafkaStreams kafkaStreams) {
+		this.storeName = propertiesConfig.getCardNoStoreName();
 		this.kafkaStreams = kafkaStreams;
 	}
 
