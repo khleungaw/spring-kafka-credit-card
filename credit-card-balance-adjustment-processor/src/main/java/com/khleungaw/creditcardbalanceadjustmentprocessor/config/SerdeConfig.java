@@ -17,7 +17,7 @@ public class SerdeConfig {
 		JsonSerde<BalanceAdjustment> balanceAdjustmentSerde = new JsonSerde<>(BalanceAdjustment.class);
 		balanceAdjustmentSerde.deserializer().configure(Map.of(
 				JsonDeserializer.TRUSTED_PACKAGES, "com.khleungaw.*",
-				JsonDeserializer.TYPE_MAPPINGS, "BalanceAdjustment:com.khleungaw.creditcardbalanceadjustment.model.BalanceAdjustment"
+				JsonDeserializer.TYPE_MAPPINGS, "BalanceAdjustment:com.khleungaw.creditcardbalanceadjustmentprocessor.model.BalanceAdjustment"
 		), false);
 		return balanceAdjustmentSerde;
 	}

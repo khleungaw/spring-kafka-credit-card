@@ -7,6 +7,7 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.processor.api.ProcessorSupplier;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
@@ -44,7 +45,6 @@ public class BalanceAdjustmentProcessor {
 
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
-        KStream<String, BalanceAdjustment> balanceAdjustmentStream = streamsBuilder.stream(balanceAdjustmentTopicName, Consumed.with(STRING_SERDE, balanceAdjustmentSerde));
         StoreBuilder<KeyValueStore<String, BigDecimal>> balanceStoreBuilder = Stores.keyValueStoreBuilder(
             Stores.persistentKeyValueStore(balanceStoreName),
             STRING_SERDE,
@@ -52,10 +52,12 @@ public class BalanceAdjustmentProcessor {
         );
         streamsBuilder.addStateStore(balanceStoreBuilder);
 
+        ProcessorSupplier<String, BalanceAdjustment, String, BigDecimal> balanceCalculatorSupplier = () -> new BalanceCalculator(balanceStoreName);
+        KStream<String, BalanceAdjustment> balanceAdjustmentStream = streamsBuilder.stream(balanceAdjustmentTopicName, Consumed.with(STRING_SERDE, balanceAdjustmentSerde));
         balanceAdjustmentStream.peek((cardNo, balanceAdjustment) -> logger.info("Received balance adjustment: {} for card: {}", balanceAdjustment, cardNo))
-            .process(BalanceCalculator::new, Named.as("balance-calculator"), balanceStoreName)
-            .peek((cardNo, newBalance) -> logger.info("Stored balance for card {} : {}", cardNo, newBalance))
-            .to(balanceTopicName, Produced.with(STRING_SERDE, bigDecimalSerde));
+                .process(balanceCalculatorSupplier, Named.as("balance-calculator"), balanceStoreName)
+                .peek((cardNo, newBalance) -> logger.info("Stored balance for card {} : {}", cardNo, newBalance))
+                .to(balanceTopicName, Produced.with(STRING_SERDE, bigDecimalSerde));
     }
 
 }

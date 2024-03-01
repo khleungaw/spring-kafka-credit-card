@@ -2,13 +2,13 @@ services:
   card-producer:
     container_name: card-producer
     build:
-      context: ./credit-card-producer
+      context: ./credit-card-card-producer
       dockerfile: Dockerfile
     ports:
       - "8081:80"
     environment:
-      - KAFKA_ADDRESS=kafka:9092
-      - STORE_NAME=card-no
+      - KAFKA_ADDRESS=138.2.67.89:9092
+      - STORE_NAME=card-no-store
       - LIMIT_TOPIC_NAME=limits
       - BALANCE_TOPIC_NAME=balances
 
@@ -20,7 +20,7 @@ services:
     ports:
       - "8082:80"
     environment:
-      - KAFKA_ADDRESS=kafka:9092
+      - KAFKA_ADDRESS=138.2.67.89:9092
       - PURCHASE_TOPIC_NAME=purchases
 
   purchase-processor:
@@ -31,7 +31,8 @@ services:
     ports:
       - "8083:80"
     environment:
-      - KAFKA_ADDRESS=kafka:9092
+      - KAFKA_ADDRESS=138.2.67.89:9092
+      - PURCHASE_TOPIC_NAME=purchases
       - LIMIT_TOPIC_NAME=limits
       - BALANCE_TOPIC_NAME=balances
       - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
@@ -45,9 +46,9 @@ services:
     ports:
       - "8084:80"
     environment:
-      - KAFKA_ADDRESS=kafka:9092
-      - BALANCE_ADJUSTMENT_TOPIC_NAME=credit-card-accepted-purchase
-      - PURCHASE_TOPIC_NAME=purchases
+      - KAFKA_ADDRESS=138.2.67.89:9092
+      - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
+      - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
 
   balance-adjustment-processor:
     container_name: balance-adjustment-processor
@@ -57,7 +58,7 @@ services:
     ports:
       - "8085:80"
     environment:
-      - KAFKA_ADDRESS=kafka:9092
+      - KAFKA_ADDRESS=138.2.67.89:9092
       - BALANCE_TOPIC_NAME=balances
       - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
       - BALANCE_STORE_NAME=balance-store

@@ -20,32 +20,35 @@ public class AcceptedPurchaseProcessor {
     @Value(value = "${balanceAdjustmentTopicName}")
     private String balanceAdjustmentTopicName;
 
-    @Value(value = "${purchaseTopicName}")
-    private String purchaseTopicName;
+    @Value(value = "${acceptedPurchaseTopicName}")
+    private String acceptedPurchaseTopicName;
 
     private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
     private final Logger logger;
-    private final JsonSerde<Purchase> purchaseJsonSerde;
+    private final JsonSerde<Purchase> purchaseSerde;
+    private final JsonSerde<BalanceAdjustment> balanceAdjustmentSerde;
 
-    public AcceptedPurchaseProcessor(JsonSerde<Purchase> purchaseSerde) {
+    public AcceptedPurchaseProcessor(JsonSerde<Purchase> purchaseSerde, JsonSerde<BalanceAdjustment> balanceAdjustmentSerde) {
         this.logger = LogManager.getLogger();
-        this.purchaseJsonSerde = purchaseSerde;
+        this.purchaseSerde = purchaseSerde;
+        this.balanceAdjustmentSerde = balanceAdjustmentSerde;
     }
 
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
         // Prepare stream from accepted-purchases
-        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(purchaseTopicName, Consumed.with(STRING_SERDE, purchaseJsonSerde));
+        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(acceptedPurchaseTopicName, Consumed.with(STRING_SERDE, purchaseSerde));
 
         // Convert purchases to balance adjustments
-        purchaseStream.mapValues(purchase -> {
+        purchaseStream.peek((cardNo, purchase)->logger.info("Received accepted purchase: {}", purchase))
+        .mapValues(purchase -> {
             BalanceAdjustment balanceAdjustment = new BalanceAdjustment();
             balanceAdjustment.setCardNo(purchase.getCardNo());
             balanceAdjustment.setAmount(purchase.getAmount());
             balanceAdjustment.setTimestamp(purchase.getTimestamp());
             return balanceAdjustment;
-        }).peek((cardNo, purchase)->logger.info("Received accepted purchase: {}", purchase))
-        .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, new JsonSerde<>(BalanceAdjustment.class)));
+        })
+        .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, balanceAdjustmentSerde));
     }
 
 }

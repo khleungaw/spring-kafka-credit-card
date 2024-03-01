@@ -5,19 +5,18 @@ import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueStore;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
-@Component
 public class BalanceCalculator implements Processor<String, BalanceAdjustment, String, BigDecimal> {
 
-    @Value(value = "${balanceStoreName}")
-    private String balanceStoreName;
-
+    private final String balanceStoreName;
     private KeyValueStore<String, BigDecimal> balanceStore;
     private ProcessorContext<String, BigDecimal> context;
+
+    public BalanceCalculator(String balanceStoreName) {
+        this.balanceStoreName = balanceStoreName;
+    }
 
     @Override
     public void init(ProcessorContext<String, BigDecimal> context) {

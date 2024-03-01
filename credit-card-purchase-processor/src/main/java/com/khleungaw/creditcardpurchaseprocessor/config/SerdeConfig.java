@@ -14,6 +14,11 @@ public class SerdeConfig {
 	@Bean
 	public JsonSerde<Purchase> purchaseSerde() {
 		JsonSerde<Purchase> purchaseSerde = new JsonSerde<>(Purchase.class);
+
+		purchaseSerde.serializer().configure(Map.of(
+				JsonDeserializer.TYPE_MAPPINGS, "Purchase:com.khleungaw.creditcardpurchaseprocessor.model.Purchase"
+		), false);
+
 		purchaseSerde.deserializer().configure(Map.of(
 				JsonDeserializer.TRUSTED_PACKAGES, "com.khleungaw.*",
 				JsonDeserializer.TYPE_MAPPINGS, "Purchase:com.khleungaw.creditcardpurchaseprocessor.model.Purchase"
