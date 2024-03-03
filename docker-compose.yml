@@ -80,6 +80,31 @@ services:
       kafka-topic-init:
         condition: service_completed_successfully
 
+  credit-card-query-service:
+    container_name: credit-card-query-service
+    build:
+      context: ./credit-card-query-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:80"
+    environment:
+      - KAFKA_ADDRESS=kafka:9092
+      - ACCEPTED_PURCHASE_STORE_NAME=accepted-purchases-store
+      - BALANCE_STORE_NAME=balance-store
+      - BALANCE_ADJUSTMENT_STORE_NAME=balance-adjustment-store
+      - LIMIT_STORE_NAME=limit-store
+      - REJECTED_PURCHASE_STORE_NAME=rejected-purchases-store
+      - PURCHASE_STORE_NAME=purchases-store
+      - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
+      - BALANCE_TOPIC_NAME=balances
+      - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
+      - LIMIT_TOPIC_NAME=limits
+      - REJECTED_PURCHASE_TOPIC_NAME=rejected-purchases
+      - PURCHASE_TOPIC_NAME=purchases
+    depends_on:
+      kafka-topic-init:
+        condition: service_completed_successfully
+
   purchase-processor:
     container_name: purchase-processor
     build:
