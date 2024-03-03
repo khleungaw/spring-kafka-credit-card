@@ -1,5 +1,30 @@
 services:
-  card-producer:
+  accepted-purchase-processor:
+    container_name: accepted-purchase-processor
+    build:
+      context: ./accepted-purchase-processor
+      dockerfile: Dockerfile
+    ports:
+      - "8084:80"
+    environment:
+      - KAFKA_ADDRESS=138.2.67.89:9092
+      - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
+      - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
+
+  balance-adjustment-processor:
+    container_name: balance-adjustment-processor
+    build:
+      context: ./balance-adjustment-processor
+      dockerfile: Dockerfile
+    ports:
+      - "8085:80"
+    environment:
+      - KAFKA_ADDRESS=138.2.67.89:9092
+      - BALANCE_STORE_NAME=balance-store
+      - BALANCE_TOPIC_NAME=balances
+      - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
+
+  credit-card-producer:
     container_name: credit-card-producer
     build:
       context: ./credit-card-producer
@@ -8,9 +33,24 @@ services:
       - "8081:80"
     environment:
       - KAFKA_ADDRESS=138.2.67.89:9092
-      - STORE_NAME=card-no-store
-      - LIMIT_TOPIC_NAME=limits
+      - CARD_NO_STORE_NAME=card-no-store
       - BALANCE_TOPIC_NAME=balances
+      - LIMIT_TOPIC_NAME=limits
+
+  purchase-processor:
+    container_name: purchase-processor
+    build:
+      context: ./purchase-processor
+      dockerfile: Dockerfile
+    ports:
+      - "8083:80"
+    environment:
+      - KAFKA_ADDRESS=138.2.67.89:9092
+      - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
+      - BALANCE_TOPIC_NAME=balances
+      - LIMIT_TOPIC_NAME=limits
+      - REJECTED_PURCHASE_TOPIC_NAME=rejected-purchases
+      - PURCHASE_TOPIC_NAME=purchases
 
   purchase-producer:
     container_name: purchase-producer
@@ -23,42 +63,3 @@ services:
       - KAFKA_ADDRESS=138.2.67.89:9092
       - PURCHASE_TOPIC_NAME=purchases
 
-  purchase-processor:
-    container_name: purchase-processor
-    build:
-      context: ./purchase-processor
-      dockerfile: Dockerfile
-    ports:
-      - "8083:80"
-    environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
-      - PURCHASE_TOPIC_NAME=purchases
-      - LIMIT_TOPIC_NAME=limits
-      - BALANCE_TOPIC_NAME=balances
-      - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
-      - REJECTED_PURCHASE_TOPIC_NAME=rejected-purchases
-
-  accepted-purchase-processor:
-    container_name: accepted-purchase-processor
-    build:
-      context: ./accepted-purchase-processor
-      dockerfile: Dockerfile
-    ports:
-      - "8084:80"
-    environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
-      - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
-      - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
-
-  balance-adjustment-processor:
-    container_name: balance-adjustment-processor
-    build:
-      context: ./balance-adjustment-processor
-      dockerfile: Dockerfile
-    ports:
-      - "8085:80"
-    environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
-      - BALANCE_TOPIC_NAME=balances
-      - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
-      - BALANCE_STORE_NAME=balance-store
