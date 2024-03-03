@@ -1,8 +1,8 @@
 services:
   card-producer:
-    container_name: card-producer
+    container_name: credit-card-producer
     build:
-      context: ./credit-card-card-producer
+      context: ./credit-card-producer
       dockerfile: Dockerfile
     ports:
       - "8081:80"
@@ -15,7 +15,7 @@ services:
   purchase-producer:
     container_name: purchase-producer
     build:
-      context: ./credit-card-purchase-producer
+      context: ./purchase-producer
       dockerfile: Dockerfile
     ports:
       - "8082:80"
@@ -26,7 +26,7 @@ services:
   purchase-processor:
     container_name: purchase-processor
     build:
-      context: ./credit-card-purchase-processor
+      context: ./purchase-processor
       dockerfile: Dockerfile
     ports:
       - "8083:80"
@@ -41,7 +41,7 @@ services:
   accepted-purchase-processor:
     container_name: accepted-purchase-processor
     build:
-      context: ./credit-card-accepted-purchase-processor
+      context: ./accepted-purchase-processor
       dockerfile: Dockerfile
     ports:
       - "8084:80"
@@ -53,7 +53,7 @@ services:
   balance-adjustment-processor:
     container_name: balance-adjustment-processor
     build:
-      context: ./credit-card-balance-adjustment-processor
+      context: ./balance-adjustment-processor
       dockerfile: Dockerfile
     ports:
       - "8085:80"
