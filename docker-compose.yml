@@ -1,13 +1,54 @@
 services:
+  kafka:
+    container_name: kafka
+    image: &kafka-image bitnami/kafka:latest
+    ports:
+      - "9094:9094"
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092, OUTSIDE://0.0.0.0:9094,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9092, OUTSIDE://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT, INTERNAL:PLAINTEXT, OUTSIDE:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server=localhost:9092", "--list"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  kafka-topic-init:
+    container_name: kafka-topic-init
+    image: *kafka-image
+    working_dir: /opt/bitnami/kafka/bin
+    entrypoint: /bin/bash
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      -c "
+      ./kafka-topics.sh --create --if-not-exists --topic accepted-purchases --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092 &&
+      ./kafka-topics.sh --create --if-not-exists --topic balances --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092 &&
+      ./kafka-topics.sh --create --if-not-exists --topic balance-adjustments --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092 &&
+      ./kafka-topics.sh --create --if-not-exists --topic limits --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092 &&
+      ./kafka-topics.sh --create --if-not-exists --topic rejected-purchases --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092 &&
+      ./kafka-topics.sh --create --if-not-exists --topic purchases --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092
+      "
+
   accepted-purchase-processor:
     container_name: accepted-purchase-processor
     build:
       context: ./accepted-purchase-processor
       dockerfile: Dockerfile
     environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
+      - KAFKA_ADDRESS=kafka:9092
       - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
       - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
+    depends_on:
+      kafka-topic-init:
+        condition: service_completed_successfully
 
   balance-adjustment-processor:
     container_name: balance-adjustment-processor
@@ -15,10 +56,13 @@ services:
       context: ./balance-adjustment-processor
       dockerfile: Dockerfile
     environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
+      - KAFKA_ADDRESS=kafka:9092
       - BALANCE_STORE_NAME=balance-store
       - BALANCE_TOPIC_NAME=balances
       - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
+    depends_on:
+      kafka-topic-init:
+        condition: service_completed_successfully
 
   credit-card-producer:
     container_name: credit-card-producer
@@ -28,10 +72,13 @@ services:
     ports:
       - "8081:80"
     environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
+      - KAFKA_ADDRESS=kafka:9092
       - CARD_NO_STORE_NAME=card-no-store
       - BALANCE_TOPIC_NAME=balances
       - LIMIT_TOPIC_NAME=limits
+    depends_on:
+      kafka-topic-init:
+        condition: service_completed_successfully
 
   purchase-processor:
     container_name: purchase-processor
@@ -39,12 +86,15 @@ services:
       context: ./purchase-processor
       dockerfile: Dockerfile
     environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
+      - KAFKA_ADDRESS=kafka:9092
       - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
       - BALANCE_TOPIC_NAME=balances
       - LIMIT_TOPIC_NAME=limits
       - REJECTED_PURCHASE_TOPIC_NAME=rejected-purchases
       - PURCHASE_TOPIC_NAME=purchases
+    depends_on:
+      kafka-topic-init:
+        condition: service_completed_successfully
 
   purchase-producer:
     container_name: purchase-producer
@@ -54,6 +104,8 @@ services:
     ports:
       - "8082:80"
     environment:
-      - KAFKA_ADDRESS=138.2.67.89:9092
+      - KAFKA_ADDRESS=kafka:9092
       - PURCHASE_TOPIC_NAME=purchases
-
+    depends_on:
+      kafka-topic-init:
+        condition: service_completed_successfully
