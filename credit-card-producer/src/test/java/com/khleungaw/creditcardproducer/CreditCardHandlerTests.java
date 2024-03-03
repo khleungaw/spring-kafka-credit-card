@@ -23,6 +23,8 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,14 +36,8 @@ public class CreditCardHandlerTests {
     @Mock KafkaTemplate<String, BigDecimal> limitKafkaTemplate;
     @Mock CardNoService cardNoService;
 
-    public SendResult<String, BigDecimal> createMockSendResult(String topic, String key, BigDecimal value) {
-        ProducerRecord<String, BigDecimal> producerRecord = new ProducerRecord<>(topic, key, value);
-        RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition(topic, 1), 0, 0, 0, 0, 0);
-        return new SendResult<>(producerRecord, recordMetadata);
-    }
-
     @BeforeEach
-    void setup() {
+    void setUp() {
         PropertiesConfig propertiesConfig = new PropertiesConfig();
         propertiesConfig.setLimitTopicName("limitTopic");
         propertiesConfig.setBalanceTopicName("balanceTopic");
@@ -49,9 +45,15 @@ public class CreditCardHandlerTests {
         creditCardHandler = new CreditCardHandler(propertiesConfig, balanceKafkaTemplate, limitKafkaTemplate, cardNoService);
     }
 
+    SendResult<String, BigDecimal> createMockSendResult(String topic, String key, BigDecimal value) {
+        ProducerRecord<String, BigDecimal> producerRecord = new ProducerRecord<>(topic, key, value);
+        RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition(topic, 1), 0, 0, 0, 0, 0);
+        return new SendResult<>(producerRecord, recordMetadata);
+    }
+
     @Test
-    @DisplayName("create(): success")
-    public void testCreateSuccess() {
+    @DisplayName("create card: success")
+    void testCreateSuccess() {
         // Arrange
         String cardNo = "1234567890";
         BigDecimal limitAmount = new BigDecimal("50000");
@@ -73,17 +75,17 @@ public class CreditCardHandlerTests {
         // Assert
         StepVerifier.create(responseMono)
             .expectNextMatches(serverResponse -> {
-                assert serverResponse.statusCode().is2xxSuccessful();
-                EntityResponse<String> entityResponse = (EntityResponse<String>) serverResponse;
-                assert entityResponse.entity().equals(cardNo);
+                assertTrue(serverResponse.statusCode().is2xxSuccessful());
+                @SuppressWarnings("unchecked") EntityResponse<String> entityResponse = (EntityResponse<String>) serverResponse;
+                assertEquals(cardNo, entityResponse.entity());
                 return true;
             })
             .verifyComplete();
     }
 
     @Test
-    @DisplayName("create(): failure")
-    public void testCreateFailure() {
+    @DisplayName("create card: failure")
+    void testCreateFailure() {
         // Arrange
         String cardNo = "1234567890";
         BigDecimal limitAmount = new BigDecimal("50000");
@@ -105,9 +107,9 @@ public class CreditCardHandlerTests {
         // Assert
         StepVerifier.create(responseMono)
             .expectNextMatches(serverResponse -> {
-                assert serverResponse.statusCode().is4xxClientError();
-                EntityResponse<String> entityResponse = (EntityResponse<String>) serverResponse;
-                assert entityResponse.entity().equals("Failed to send limit");
+                assertTrue(serverResponse.statusCode().is5xxServerError());
+                @SuppressWarnings("unchecked") EntityResponse<String> entityResponse = (EntityResponse<String>) serverResponse;
+                assertEquals("Failed to send limit", entityResponse.entity());
                 return true;
             })
             .verifyComplete();

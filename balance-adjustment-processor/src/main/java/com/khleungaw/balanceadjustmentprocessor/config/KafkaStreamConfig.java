@@ -24,7 +24,7 @@ public class KafkaStreamConfig {
     @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     KafkaStreamsConfiguration kStreamsConfig() {
         return new KafkaStreamsConfiguration(Map.of(
-            APPLICATION_ID_CONFIG, "credit-card-balance-adjustment-processor",
+            APPLICATION_ID_CONFIG, "balance-adjustment-processor",
             BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress,
             DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class,
             DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class,

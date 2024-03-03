@@ -62,24 +62,37 @@ public class PurchaseProcessor {
         // Split the stream into two branches based on new balance
         purchaseWithBalanceAndLimitStream.peek((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Joined purchase: {}", purchaseWithBalanceAndLimit))
             .split()
-            .branch((cardNo, purchaseWithBalanceAndLimit) -> {
-                if (purchaseWithBalanceAndLimit.getBalanceAmount() == null || purchaseWithBalanceAndLimit.getLimitAmount() == null) {
-                    logger.warn("Unknown card in purchase: {}", purchaseWithBalanceAndLimit);
-                    return false;
-                }
+            .branch(
+                (cardNo, purchaseWithBalanceAndLimit) -> {
+                    if (purchaseWithBalanceAndLimit.getBalanceAmount() == null && purchaseWithBalanceAndLimit.getLimitAmount() == null) {
+                        logger.info("Unknown card in purchase: {}", purchaseWithBalanceAndLimit);
+                        return false;
+                    }
 
-                BigDecimal newBalance = purchaseWithBalanceAndLimit.getBalanceAmount().add(purchaseWithBalanceAndLimit.getAmount());
-                return newBalance.compareTo(purchaseWithBalanceAndLimit.getLimitAmount()) <= 0;
-            }, Branched.withConsumer(stream -> stream
-                .mapValues((purchaseWithBalanceAndLimit) -> {
-                    logger.info("Accepted purchase: {}", purchaseWithBalanceAndLimit);
-                    return new Purchase(purchaseWithBalanceAndLimit);
-                }).to(acceptedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseJsonSerde))))
-            .defaultBranch(Branched.withConsumer(stream-> stream
-                .mapValues((purchaseWithBalanceAndLimit) -> {
-                    logger.info("Rejected purchase: {}", purchaseWithBalanceAndLimit);
-                    return new Purchase(purchaseWithBalanceAndLimit);
-                }).to(rejectedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseJsonSerde))));
+                    if (purchaseWithBalanceAndLimit.getBalanceAmount() == null) {
+                        logger.error("Missing balance for card in purchase: {}", purchaseWithBalanceAndLimit);
+                        return false;
+                    }
+
+                    if (purchaseWithBalanceAndLimit.getLimitAmount() == null) {
+                        logger.error("Missing limit for card in purchase: {}", purchaseWithBalanceAndLimit);
+                        return false;
+                    }
+
+                    BigDecimal newBalance = purchaseWithBalanceAndLimit.getBalanceAmount().add(purchaseWithBalanceAndLimit.getAmount());
+                    return newBalance.compareTo(purchaseWithBalanceAndLimit.getLimitAmount()) <= 0;
+                },
+                Branched.withConsumer(stream ->
+                    stream.peek((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Accepted purchase: {}", purchaseWithBalanceAndLimit))
+                        .mapValues(Purchase::new)
+                        .to(acceptedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseJsonSerde))
+                )
+            )
+            .defaultBranch(Branched.withConsumer(stream->
+                stream.peek((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Rejected purchase: {}", purchaseWithBalanceAndLimit))
+                    .mapValues(Purchase::new)
+                    .to(rejectedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseJsonSerde)))
+            );
     }
 
 }

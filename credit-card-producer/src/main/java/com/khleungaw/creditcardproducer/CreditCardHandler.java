@@ -51,12 +51,14 @@ public class CreditCardHandler {
 				CompletableFuture<SendResult<String, BigDecimal>> balanceFuture = balanceKafkaTemplate.send(balanceTopicName, cardNo, BigDecimal.ZERO).toCompletableFuture();
 
 				return Mono.fromFuture(CompletableFuture.allOf(limitFuture, balanceFuture).thenApply(v -> limitFuture.join()));
-			}).flatMap(sendResult -> {
+			})
+			.flatMap(sendResult -> {
 				logger.info("Created card: {}", sendResult);
 				return ServerResponse.ok().bodyValue(sendResult.getProducerRecord().key());
-			}).onErrorResume(e -> {
+			})
+			.onErrorResume(e -> {
 				logger.error("Failed to create card", e);
-				return ServerResponse.badRequest().bodyValue(e.getMessage());
+				return ServerResponse.status(500).bodyValue(e.getMessage());
 			});
 	}
 
@@ -65,10 +67,12 @@ public class CreditCardHandler {
 			.flatMap(cardNo -> {
 				logger.info("Received cardNo: {}", cardNo);
 				return Mono.just(cardNoService.checkCardNo(cardNo));
-			}).flatMap(unique -> {
+			})
+			.flatMap(unique -> {
 				logger.info("CardNo is unique: {}", unique);
 				return ServerResponse.ok().bodyValue(unique);
-			}).onErrorResume(e -> {
+			})
+			.onErrorResume(e -> {
 				logger.error("Failed to check cardNo", e);
 				return ServerResponse.badRequest().bodyValue(e.getMessage());
 			});

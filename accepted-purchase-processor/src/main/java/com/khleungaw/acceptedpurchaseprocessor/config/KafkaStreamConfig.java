@@ -31,7 +31,7 @@ public class KafkaStreamConfig {
     @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     KafkaStreamsConfiguration kStreamsConfig() {
         return new KafkaStreamsConfiguration(Map.of(
-            APPLICATION_ID_CONFIG, "credit-card-accepted-purchase-processor",
+            APPLICATION_ID_CONFIG, "accepted-purchase-processor",
             BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress,
             DEFAULT_KEY_SERDE_CLASS_CONFIG, STRING_SERDE.getClass(),
             DEFAULT_VALUE_SERDE_CLASS_CONFIG, STRING_SERDE.getClass(),

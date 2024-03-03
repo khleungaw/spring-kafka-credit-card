@@ -30,17 +30,19 @@ public class PurchaseHandler {
 
     public Mono<ServerResponse> create(ServerRequest req) {
         return req.body(BodyExtractors.toMono(PurchaseDTO.class))
-                .flatMap(purchaseDTO -> {
-                    Purchase purchase = new Purchase(purchaseDTO);
-                    logger.info("Received purchase: {}", purchase);
-                    return Mono.fromFuture(kafkaTemplate.send(purchaseTopicName, purchase.getCardNo(), purchase).toCompletableFuture());
-                }).flatMap(sendResult -> {
-                    logger.info("Sent purchase: {}", sendResult);
-                    return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(sendResult.getProducerRecord().value().toString());
-                }).onErrorResume(e -> {
-                    logger.error("Failed to send purchase", e);
-                    return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue(e.getMessage());
-                });
+            .flatMap(purchaseDTO -> {
+                Purchase purchase = new Purchase(purchaseDTO);
+                logger.info("Received purchase: {}", purchase);
+                return Mono.fromFuture(kafkaTemplate.send(purchaseTopicName, purchase.getCardNo(), purchase).toCompletableFuture());
+            })
+            .flatMap(sendResult -> {
+                logger.info("Sent purchase: {}", sendResult);
+                return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(sendResult.getProducerRecord().value().toString());
+            })
+            .onErrorResume(e -> {
+                logger.error("Failed to send purchase", e);
+                return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue(e.getMessage());
+            });
     }
 
 }

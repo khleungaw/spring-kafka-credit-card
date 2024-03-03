@@ -2,6 +2,7 @@ package com.khleungaw.acceptedpurchaseprocessor;
 
 import com.khleungaw.acceptedpurchaseprocessor.config.PropertiesConfig;
 import com.khleungaw.acceptedpurchaseprocessor.model.BalanceAdjustment;
+import com.khleungaw.acceptedpurchaseprocessor.model.BalanceAdjustmentType;
 import com.khleungaw.acceptedpurchaseprocessor.model.Purchase;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -45,6 +46,7 @@ public class AcceptedPurchaseProcessor {
             balanceAdjustment.setCardNo(purchase.getCardNo());
             balanceAdjustment.setAmount(purchase.getAmount());
             balanceAdjustment.setTimestamp(purchase.getTimestamp());
+            balanceAdjustment.setType(BalanceAdjustmentType.PURCHASE);
             return balanceAdjustment;
         })
         .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, balanceAdjustmentSerde));
