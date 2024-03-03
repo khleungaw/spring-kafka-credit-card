@@ -15,13 +15,13 @@ public class PurchaseWithBalanceAndLimit {
 
 	public PurchaseWithBalanceAndLimit() {}
 
-	public PurchaseWithBalanceAndLimit(PurchaseWithBalance purchaseWithBalance, String limit) {
+	public PurchaseWithBalanceAndLimit(PurchaseWithBalance purchaseWithBalance, BigDecimal limit) {
 		this.id = purchaseWithBalance.getId();
 		this.cardNo = purchaseWithBalance.getCardNo();
 		this.amount = purchaseWithBalance.getAmount();
 		this.timestamp = purchaseWithBalance.getTimestamp();
 		this.balanceAmount = purchaseWithBalance.getBalanceAmount();
-		this.limitAmount = limit == null ? null : new BigDecimal(limit);
+		this.limitAmount = limit;
 	}
 
 	public UUID getId() {

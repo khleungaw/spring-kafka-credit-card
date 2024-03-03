@@ -40,16 +40,16 @@ public class AcceptedPurchaseProcessor {
         KStream<String, Purchase> purchaseStream = streamsBuilder.stream(acceptedPurchaseTopicName, Consumed.with(STRING_SERDE, purchaseSerde));
 
         // Convert purchases to balance adjustments
-        purchaseStream.peek((cardNo, purchase)->logger.info("Received accepted purchase: {}", purchase))
-        .mapValues(purchase -> {
-            BalanceAdjustment balanceAdjustment = new BalanceAdjustment();
-            balanceAdjustment.setCardNo(purchase.getCardNo());
-            balanceAdjustment.setAmount(purchase.getAmount());
-            balanceAdjustment.setTimestamp(purchase.getTimestamp());
-            balanceAdjustment.setType(BalanceAdjustmentType.PURCHASE);
-            return balanceAdjustment;
-        })
-        .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, balanceAdjustmentSerde));
+        purchaseStream.peek((cardNo, purchase) -> logger.info("Received accepted purchase: {}", purchase))
+            .mapValues(purchase -> {
+                BalanceAdjustment balanceAdjustment = new BalanceAdjustment();
+                balanceAdjustment.setCardNo(purchase.getCardNo());
+                balanceAdjustment.setAmount(purchase.getAmount());
+                balanceAdjustment.setTimestamp(purchase.getTimestamp());
+                balanceAdjustment.setType(BalanceAdjustmentType.PURCHASE);
+                return balanceAdjustment;
+            })
+            .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, balanceAdjustmentSerde));
     }
 
 }

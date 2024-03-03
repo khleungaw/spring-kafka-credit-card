@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class PropertiesConfig {
 
     private String balanceStoreName;
+    private String balanceGlobalStoreName;
     private String balanceTopicName;
     private String balanceAdjustmentTopicName;
 
@@ -25,6 +26,14 @@ public class PropertiesConfig {
 
     public void setBalanceTopicName(String balanceTopicName) {
         this.balanceTopicName = balanceTopicName;
+    }
+
+    public String getBalanceGlobalStoreName() {
+        return balanceGlobalStoreName;
+    }
+
+    public void setBalanceGlobalStoreName(String balanceGlobalStoreName) {
+        this.balanceGlobalStoreName = balanceGlobalStoreName;
     }
 
     public String getBalanceAdjustmentTopicName() {

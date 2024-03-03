@@ -14,12 +14,12 @@ public class PurchaseWithBalance {
 
 	public PurchaseWithBalance() {}
 
-	public PurchaseWithBalance(Purchase purchase, String balance) {
+	public PurchaseWithBalance(Purchase purchase, BigDecimal balance) {
 		this.id = purchase.getId();
 		this.cardNo = purchase.getCardNo();
 		this.amount = purchase.getAmount();
 		this.timestamp = purchase.getTimestamp();
-		this.balanceAmount = balance == null ? null : new BigDecimal(balance);
+		this.balanceAmount = balance;
 	}
 
 	public UUID getId() {

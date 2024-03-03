@@ -65,7 +65,12 @@ public class PurchaseProcessorTests {
 				JsonDeserializer.TYPE_MAPPINGS, "Purchase:com.khleungaw.purchaseprocessor.model.Purchase"
 		), false);
 
-		purchaseProcessor = new PurchaseProcessor(propertiesConfig, purchaseSerde);
+		JsonSerde<BigDecimal> bigDecimalSerde = new JsonSerde<>(BigDecimal.class);
+		bigDecimalSerde.deserializer().configure(Map.of(
+				JsonDeserializer.TRUSTED_PACKAGES, "java.math.*"
+		), false);
+
+		purchaseProcessor = new PurchaseProcessor(propertiesConfig, purchaseSerde, bigDecimalSerde);
 
 		// Set up Kafka Stream config
 		Properties kafkaStreamConfig = new Properties();
@@ -81,10 +86,8 @@ public class PurchaseProcessorTests {
 		testDriver = new TopologyTestDriver(builder.build(), kafkaStreamConfig);
 
 		// Set up test topics
-		try (JsonSerde<BigDecimal> bigDecimalSerde = new JsonSerde<>(BigDecimal.class)) {
-			balanceTopicInput = testDriver.createInputTopic(propertiesConfig.getBalanceTopicName(), Serdes.String().serializer(), bigDecimalSerde.serializer());
-			limitTopicInput = testDriver.createInputTopic(propertiesConfig.getLimitTopicName(), Serdes.String().serializer(), bigDecimalSerde.serializer());
-		}
+		balanceTopicInput = testDriver.createInputTopic(propertiesConfig.getBalanceTopicName(), Serdes.String().serializer(), bigDecimalSerde.serializer());
+		limitTopicInput = testDriver.createInputTopic(propertiesConfig.getLimitTopicName(), Serdes.String().serializer(), bigDecimalSerde.serializer());
 		purchaseTopicInput = testDriver.createInputTopic(propertiesConfig.getPurchaseTopicName(), Serdes.String().serializer(), purchaseSerde.serializer());
 		acceptedPurchaseTopicOutput = testDriver.createOutputTopic(propertiesConfig.getAcceptedPurchaseTopicName(), Serdes.String().deserializer(), purchaseSerde.deserializer());
 		rejectedPurchaseTopicOutput = testDriver.createOutputTopic(propertiesConfig.getRejectedPurchaseTopicName(), Serdes.String().deserializer(), purchaseSerde.deserializer());

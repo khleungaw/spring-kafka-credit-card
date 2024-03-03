@@ -47,7 +47,7 @@ public class KafkaStreamConfig {
 	@Bean
 	public KafkaStreams kafkaStreams() {
 		StreamsBuilder streamsBuilder = new StreamsBuilder();
-		streamsBuilder.table(limitTopicName, Materialized.as(cardNoStoreName));
+		streamsBuilder.globalTable(limitTopicName, Materialized.as(cardNoStoreName));
 		KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(), kStreamsConfig().asProperties());
 		kafkaStreams.start();
 		return kafkaStreams;

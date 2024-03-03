@@ -9,8 +9,6 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.processor.api.ProcessorSupplier;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,19 +41,20 @@ public class BalanceAdjustmentProcessor {
 
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
-        StoreBuilder<KeyValueStore<String, BigDecimal>> balanceStoreBuilder = Stores.keyValueStoreBuilder(
-            Stores.persistentKeyValueStore(balanceStoreName),
-            STRING_SERDE,
-            bigDecimalSerde
+        ProcessorSupplier<String, BigDecimal, Void, Void> balanceStoreProcessorSupplier = () -> new BalanceStoreProcessor(balanceStoreName);
+        streamsBuilder.addGlobalStore(
+            Stores.keyValueStoreBuilder(Stores.inMemoryKeyValueStore(balanceStoreName), STRING_SERDE, bigDecimalSerde),
+            balanceTopicName,
+            Consumed.with(STRING_SERDE, bigDecimalSerde),
+            balanceStoreProcessorSupplier
         );
-        streamsBuilder.addStateStore(balanceStoreBuilder);
 
         ProcessorSupplier<String, BalanceAdjustment, String, BigDecimal> balanceCalculatorSupplier = () -> new BalanceCalculator(balanceStoreName);
         KStream<String, BalanceAdjustment> balanceAdjustmentStream = streamsBuilder.stream(balanceAdjustmentTopicName, Consumed.with(STRING_SERDE, balanceAdjustmentSerde));
         balanceAdjustmentStream.peek((cardNo, balanceAdjustment) -> logger.info("Received balance adjustment: {} for card: {}", balanceAdjustment, cardNo))
-                .process(balanceCalculatorSupplier, Named.as("balance-calculator"), balanceStoreName)
-                .peek((cardNo, newBalance) -> logger.info("Stored balance for card {} : {}", cardNo, newBalance))
-                .to(balanceTopicName, Produced.with(STRING_SERDE, bigDecimalSerde));
+            .process(balanceCalculatorSupplier, Named.as("balance-calculator"))
+            .peek((cardNo, newBalance) -> logger.info("Stored balance for card {} : {}", cardNo, newBalance))
+            .to(balanceTopicName, Produced.with(STRING_SERDE, bigDecimalSerde));
     }
 
 }

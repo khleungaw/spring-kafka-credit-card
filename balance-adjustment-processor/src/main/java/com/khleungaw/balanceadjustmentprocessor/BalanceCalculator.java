@@ -35,7 +35,6 @@ public class BalanceCalculator implements Processor<String, BalanceAdjustment, S
         }
 
         BigDecimal newBalance = currentBalance.add(balanceAdjustment.getAmount());
-        balanceStore.put(cardNo, newBalance);
         context.forward(record.withKey(cardNo).withValue(newBalance));
     }
 
