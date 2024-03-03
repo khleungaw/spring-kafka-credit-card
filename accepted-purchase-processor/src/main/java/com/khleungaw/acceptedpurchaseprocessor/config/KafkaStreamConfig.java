@@ -1,7 +1,6 @@
 package com.khleungaw.acceptedpurchaseprocessor.config;
 
 import org.apache.kafka.common.serialization.Serdes;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -23,16 +22,19 @@ import static org.apache.kafka.streams.StreamsConfig.PROCESSING_GUARANTEE_CONFIG
 @EnableKafkaStreams
 public class KafkaStreamConfig {
 
-    @Value(value = "${spring.kafka.bootstrap-servers}")
-    private String bootstrapAddress;
+    private final PropertiesConfig propertiesConfig;
+
+    public KafkaStreamConfig(PropertiesConfig propertiesConfig) {
+        this.propertiesConfig = propertiesConfig;
+    }
 
     private final static Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
 
     @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
-    KafkaStreamsConfiguration kStreamsConfig() {
+    public KafkaStreamsConfiguration kStreamsConfig() {
         return new KafkaStreamsConfiguration(Map.of(
             APPLICATION_ID_CONFIG, "accepted-purchase-processor",
-            BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress,
+            BOOTSTRAP_SERVERS_CONFIG, propertiesConfig.getBootstrapAddress(),
             DEFAULT_KEY_SERDE_CLASS_CONFIG, STRING_SERDE.getClass(),
             DEFAULT_VALUE_SERDE_CLASS_CONFIG, STRING_SERDE.getClass(),
             PROCESSING_GUARANTEE_CONFIG, EXACTLY_ONCE_V2

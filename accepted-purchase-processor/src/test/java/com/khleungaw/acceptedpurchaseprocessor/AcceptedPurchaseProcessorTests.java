@@ -42,6 +42,7 @@ public class AcceptedPurchaseProcessorTests {
 	void setUp() {
 		// Set up Processor
 		PropertiesConfig propertiesConfig = new PropertiesConfig();
+		propertiesConfig.setBootstrapAddress("kafka:9092");
 		propertiesConfig.setAcceptedPurchaseTopicName("accepted-purchases");
 		propertiesConfig.setBalanceAdjustmentTopicName("balance-adjustments");
 

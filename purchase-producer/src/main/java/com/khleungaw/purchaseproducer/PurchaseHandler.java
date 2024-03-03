@@ -19,12 +19,12 @@ public class PurchaseHandler {
 
 
     private final Logger logger;
-    private final String purchaseTopicName;
+    private final PropertiesConfig propertiesConfig;
     private final KafkaTemplate<String, Purchase> kafkaTemplate;
 
     public PurchaseHandler(PropertiesConfig propertiesConfig, KafkaTemplate<String, Purchase> kafkaTemplate) {
         this.logger = LogManager.getLogger();
-        this.purchaseTopicName = propertiesConfig.getPurchaseTopicName();
+        this.propertiesConfig = propertiesConfig;
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -33,7 +33,7 @@ public class PurchaseHandler {
             .flatMap(purchaseDTO -> {
                 Purchase purchase = new Purchase(purchaseDTO);
                 logger.info("Received purchase: {}", purchase);
-                return Mono.fromFuture(kafkaTemplate.send(purchaseTopicName, purchase.getCardNo(), purchase).toCompletableFuture());
+                return Mono.fromFuture(kafkaTemplate.send(propertiesConfig.getPurchaseTopicName(), purchase.getCardNo(), purchase).toCompletableFuture());
             })
             .flatMap(sendResult -> {
                 logger.info("Sent purchase: {}", sendResult);

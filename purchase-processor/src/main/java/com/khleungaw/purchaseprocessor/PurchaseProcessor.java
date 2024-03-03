@@ -22,24 +22,17 @@ import java.math.BigDecimal;
 @Component
 public class PurchaseProcessor {
 
-    private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
 
     private final Logger logger;
-    private final String acceptedPurchaseTopicName;
-    private final String balanceTopicName;
-    private final String limitTopicName;
-    private final String rejectedPurchaseTopicName;
-    private final String purchaseTopicName;
+    private final PropertiesConfig propertiesConfig;
     private final JsonSerde<Purchase> purchaseSerde;
     private final JsonSerde<BigDecimal> bigDecimalSerde;
+    private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
+
 
     public PurchaseProcessor(PropertiesConfig propertiesConfig, JsonSerde<Purchase> purchaseSerde, JsonSerde<BigDecimal> bigDecimalSerde) {
         this.logger = LogManager.getLogger();
-        this.acceptedPurchaseTopicName = propertiesConfig.getAcceptedPurchaseTopicName();
-        this.balanceTopicName = propertiesConfig.getBalanceTopicName();
-        this.limitTopicName = propertiesConfig.getLimitTopicName();
-        this.rejectedPurchaseTopicName = propertiesConfig.getRejectedPurchaseTopicName();
-        this.purchaseTopicName = propertiesConfig.getPurchaseTopicName();
+        this.propertiesConfig = propertiesConfig;
         this.purchaseSerde = purchaseSerde;
         this.bigDecimalSerde = bigDecimalSerde;
     }
@@ -47,10 +40,10 @@ public class PurchaseProcessor {
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
         // Prepare stream from purchases, tables from balances and limits
-        GlobalKTable<String, BigDecimal> creditCardBalanceTable = streamsBuilder.globalTable(balanceTopicName, Consumed.with(STRING_SERDE, bigDecimalSerde));
-        GlobalKTable<String, BigDecimal> creditCardLimitTable = streamsBuilder.globalTable(limitTopicName, Consumed.with(STRING_SERDE, bigDecimalSerde));
-        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(purchaseTopicName, Consumed.with(STRING_SERDE, purchaseSerde));
-        purchaseStream.foreach((cardNo, purchase) -> logger.info("Received purchase: {}", purchase));
+        GlobalKTable<String, BigDecimal> creditCardBalanceTable = streamsBuilder.globalTable(propertiesConfig.getBalanceTopicName(), Consumed.with(STRING_SERDE, bigDecimalSerde));
+        GlobalKTable<String, BigDecimal> creditCardLimitTable = streamsBuilder.globalTable(propertiesConfig.getLimitTopicName(), Consumed.with(STRING_SERDE, bigDecimalSerde));
+        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(propertiesConfig.getPurchaseTopicName(), Consumed.with(STRING_SERDE, purchaseSerde));
+        purchaseStream.peek((cardNo, purchase) -> logger.info("Received purchase: {}", purchase));
 
         // Intermediate streams
         KStream<String, PurchaseWithBalance> purchaseWithBalanceStream = purchaseStream.leftJoin(
@@ -91,13 +84,13 @@ public class PurchaseProcessor {
                 Branched.withConsumer(stream ->
                     stream.peek((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Accepted purchase: {}", purchaseWithBalanceAndLimit))
                         .mapValues(Purchase::new)
-                        .to(acceptedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseSerde))
+                        .to(propertiesConfig.getAcceptedPurchaseTopicName(), Produced.with(STRING_SERDE, purchaseSerde))
                 )
             )
             .defaultBranch(Branched.withConsumer(stream->
                 stream.peek((cardNo, purchaseWithBalanceAndLimit) -> logger.info("Rejected purchase: {}", purchaseWithBalanceAndLimit))
                     .mapValues(Purchase::new)
-                    .to(rejectedPurchaseTopicName, Produced.with(STRING_SERDE, purchaseSerde)))
+                    .to(propertiesConfig.getRejectedPurchaseTopicName(), Produced.with(STRING_SERDE, purchaseSerde)))
             );
     }
 

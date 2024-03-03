@@ -40,6 +40,7 @@ public class BalanceAdjustmentProcessorTests {
 	void setUp() {
 		// Set up Processor
 		PropertiesConfig propertiesConfig = new PropertiesConfig();
+		propertiesConfig.setBootstrapAddress("kafka:9092");
 		propertiesConfig.setBalanceStoreName("balance-store");
 		propertiesConfig.setBalanceTopicName("balances");
 		propertiesConfig.setBalanceAdjustmentTopicName("balance-adjustments");

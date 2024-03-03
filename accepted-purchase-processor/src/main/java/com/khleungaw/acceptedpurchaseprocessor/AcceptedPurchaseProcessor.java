@@ -17,19 +17,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AcceptedPurchaseProcessor {
-
-    private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
-
+    
     private final Logger logger;
-    private final String acceptedPurchaseTopicName;
-    private final String balanceAdjustmentTopicName;
+    private final PropertiesConfig propertiesConfig;
     private final JsonSerde<Purchase> purchaseSerde;
     private final JsonSerde<BalanceAdjustment> balanceAdjustmentSerde;
+    private final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
 
     public AcceptedPurchaseProcessor(PropertiesConfig propertiesConfig, JsonSerde<Purchase> purchaseSerde, JsonSerde<BalanceAdjustment> balanceAdjustmentSerde) {
         this.logger = LogManager.getLogger();
-        this.acceptedPurchaseTopicName = propertiesConfig.getAcceptedPurchaseTopicName();
-        this.balanceAdjustmentTopicName = propertiesConfig.getBalanceAdjustmentTopicName();
+        this.propertiesConfig = propertiesConfig;
         this.balanceAdjustmentSerde = balanceAdjustmentSerde;
         this.purchaseSerde = purchaseSerde;
     }
@@ -37,7 +34,7 @@ public class AcceptedPurchaseProcessor {
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
         // Prepare stream from accepted-purchases
-        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(acceptedPurchaseTopicName, Consumed.with(STRING_SERDE, purchaseSerde));
+        KStream<String, Purchase> purchaseStream = streamsBuilder.stream(propertiesConfig.getAcceptedPurchaseTopicName(), Consumed.with(STRING_SERDE, purchaseSerde));
 
         // Convert purchases to balance adjustments
         purchaseStream.peek((cardNo, purchase) -> logger.info("Received accepted purchase: {}", purchase))
@@ -49,7 +46,7 @@ public class AcceptedPurchaseProcessor {
                 balanceAdjustment.setType(BalanceAdjustmentType.PURCHASE);
                 return balanceAdjustment;
             })
-            .to(balanceAdjustmentTopicName, Produced.with(STRING_SERDE, balanceAdjustmentSerde));
+            .to(propertiesConfig.getBalanceAdjustmentTopicName(), Produced.with(STRING_SERDE, balanceAdjustmentSerde));
     }
 
 }

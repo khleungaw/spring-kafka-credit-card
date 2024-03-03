@@ -50,6 +50,7 @@ public class PurchaseProcessorTests {
 	public void setUp() {
 		// Set up processor
 		PropertiesConfig propertiesConfig = new PropertiesConfig();
+		propertiesConfig.setBootstrapAddress("kafka:9092");
 		propertiesConfig.setAcceptedPurchaseTopicName(acceptedPurchaseTopicName);
 		propertiesConfig.setBalanceTopicName(balanceTopicName);
 		propertiesConfig.setLimitTopicName(limitTopicName);

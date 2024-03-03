@@ -39,6 +39,9 @@ public class CreditCardHandlerTests {
     @BeforeEach
     void setUp() {
         PropertiesConfig propertiesConfig = new PropertiesConfig();
+        propertiesConfig.setPort("80");
+        propertiesConfig.setBootstrapAddress("localhost:9092");
+        propertiesConfig.setCardNoStoreName("card-no-store");
         propertiesConfig.setLimitTopicName("limitTopic");
         propertiesConfig.setBalanceTopicName("balanceTopic");
 

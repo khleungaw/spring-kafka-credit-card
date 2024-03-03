@@ -21,40 +21,35 @@ import java.math.BigDecimal;
 @Component
 public class BalanceAdjustmentProcessor {
 
-    private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
-
     private final Logger logger;
-    private final String balanceStoreName;
-    private final String balanceTopicName;
-    private final String balanceAdjustmentTopicName;
+    private final PropertiesConfig propertiesConfig;
     private final JsonSerde<BalanceAdjustment> balanceAdjustmentSerde;
     private final JsonSerde<BigDecimal> bigDecimalSerde;
+    private static final Serdes.StringSerde STRING_SERDE = new Serdes.StringSerde();
 
     public BalanceAdjustmentProcessor(PropertiesConfig propertiesConfig, JsonSerde<BalanceAdjustment> balanceAdjustmentSerde, JsonSerde<BigDecimal> bigDecimalSerde) {
         this.logger = LogManager.getLogger();
-        this.balanceStoreName = propertiesConfig.getBalanceStoreName();
-        this.balanceTopicName = propertiesConfig.getBalanceTopicName();
-        this.balanceAdjustmentTopicName = propertiesConfig.getBalanceAdjustmentTopicName();
+        this.propertiesConfig = propertiesConfig;
         this.balanceAdjustmentSerde = balanceAdjustmentSerde;
         this.bigDecimalSerde = bigDecimalSerde;
     }
 
     @Autowired
     public void buildPipeline(StreamsBuilder streamsBuilder) {
-        ProcessorSupplier<String, BigDecimal, Void, Void> balanceStoreProcessorSupplier = () -> new BalanceStoreProcessor(balanceStoreName);
+        ProcessorSupplier<String, BigDecimal, Void, Void> balanceStoreProcessorSupplier = () -> new BalanceStorePublisher(propertiesConfig.getBalanceStoreName());
         streamsBuilder.addGlobalStore(
-            Stores.keyValueStoreBuilder(Stores.inMemoryKeyValueStore(balanceStoreName), STRING_SERDE, bigDecimalSerde),
-            balanceTopicName,
+            Stores.keyValueStoreBuilder(Stores.inMemoryKeyValueStore(propertiesConfig.getBalanceStoreName()), STRING_SERDE, bigDecimalSerde),
+            propertiesConfig.getBalanceTopicName(),
             Consumed.with(STRING_SERDE, bigDecimalSerde),
             balanceStoreProcessorSupplier
         );
 
-        ProcessorSupplier<String, BalanceAdjustment, String, BigDecimal> balanceCalculatorSupplier = () -> new BalanceCalculator(balanceStoreName);
-        KStream<String, BalanceAdjustment> balanceAdjustmentStream = streamsBuilder.stream(balanceAdjustmentTopicName, Consumed.with(STRING_SERDE, balanceAdjustmentSerde));
+        ProcessorSupplier<String, BalanceAdjustment, String, BigDecimal> balanceCalculatorSupplier = () -> new BalanceCalculator(propertiesConfig.getBalanceStoreName());
+        KStream<String, BalanceAdjustment> balanceAdjustmentStream = streamsBuilder.stream(propertiesConfig.getBalanceAdjustmentTopicName(), Consumed.with(STRING_SERDE, balanceAdjustmentSerde));
         balanceAdjustmentStream.peek((cardNo, balanceAdjustment) -> logger.info("Received balance adjustment: {} for card: {}", balanceAdjustment, cardNo))
             .process(balanceCalculatorSupplier, Named.as("balance-calculator"))
             .peek((cardNo, newBalance) -> logger.info("Stored balance for card {} : {}", cardNo, newBalance))
-            .to(balanceTopicName, Produced.with(STRING_SERDE, bigDecimalSerde));
+            .to(propertiesConfig.getBalanceTopicName(), Produced.with(STRING_SERDE, bigDecimalSerde));
     }
 
 }

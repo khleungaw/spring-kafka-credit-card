@@ -19,16 +19,14 @@ import java.util.concurrent.CompletableFuture;
 public class CreditCardHandler {
 
 	private final Logger logger;
-	private final String balanceTopicName;
-	private final String limitTopicName;
+	private final PropertiesConfig propertiesConfig;
 	private final KafkaTemplate<String, BigDecimal> balanceKafkaTemplate;
 	private final KafkaTemplate<String, BigDecimal> limitKafkaTemplate;
 	private final CardNoService cardNoService;
 
 	public CreditCardHandler(PropertiesConfig propertiesConfig, KafkaTemplate<String, BigDecimal> balanceKafkaTemplate, KafkaTemplate<String, BigDecimal> limitKafkaTemplate, CardNoService cardNoService) {
 		this.logger = LogManager.getLogger();
-		this.balanceTopicName = propertiesConfig.getBalanceTopicName();
-		this.limitTopicName = propertiesConfig.getLimitTopicName();
+		this.propertiesConfig = propertiesConfig;
 		this.balanceKafkaTemplate = balanceKafkaTemplate;
 		this.limitKafkaTemplate = limitKafkaTemplate;
 		this.cardNoService = cardNoService;
@@ -47,8 +45,8 @@ public class CreditCardHandler {
 				}
 
 				String cardNo = cardNoService.generateCardNo();
-				CompletableFuture<SendResult<String, BigDecimal>> limitFuture = limitKafkaTemplate.send(limitTopicName, cardNo, new BigDecimal(limitString)).toCompletableFuture();
-				CompletableFuture<SendResult<String, BigDecimal>> balanceFuture = balanceKafkaTemplate.send(balanceTopicName, cardNo, BigDecimal.ZERO).toCompletableFuture();
+				CompletableFuture<SendResult<String, BigDecimal>> limitFuture = limitKafkaTemplate.send(propertiesConfig.getLimitTopicName(), cardNo, new BigDecimal(limitString)).toCompletableFuture();
+				CompletableFuture<SendResult<String, BigDecimal>> balanceFuture = balanceKafkaTemplate.send(propertiesConfig.getBalanceTopicName(), cardNo, BigDecimal.ZERO).toCompletableFuture();
 
 				return Mono.fromFuture(CompletableFuture.allOf(limitFuture, balanceFuture).thenApply(v -> limitFuture.join()));
 			})

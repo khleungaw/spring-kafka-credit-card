@@ -7,9 +7,27 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @ConfigurationPropertiesScan
 public class PropertiesConfig {
 
+    private String port;
+    private String bootstrapAddress;
     private String cardNoStoreName;
     private String balanceTopicName;
     private String limitTopicName;
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getBootstrapAddress() {
+        return bootstrapAddress;
+    }
+
+    public void setBootstrapAddress(String bootstrapAddress) {
+        this.bootstrapAddress = bootstrapAddress;
+    }
 
     public String getCardNoStoreName() {
         return cardNoStoreName;

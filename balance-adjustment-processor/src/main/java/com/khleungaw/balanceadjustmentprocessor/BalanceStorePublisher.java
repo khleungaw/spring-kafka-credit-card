@@ -7,12 +7,12 @@ import org.apache.kafka.streams.state.KeyValueStore;
 
 import java.math.BigDecimal;
 
-public class BalanceStoreProcessor implements Processor<String, BigDecimal, Void, Void> {
+public class BalanceStorePublisher implements Processor<String, BigDecimal, Void, Void> {
 
 	private final String balanceStoreName;
 	private KeyValueStore<String, BigDecimal> balanceStore;
 
-	public BalanceStoreProcessor(String balanceGlobalStoreName) {
+	public BalanceStorePublisher(String balanceGlobalStoreName) {
 		this.balanceStoreName = balanceGlobalStoreName;
 	}
 

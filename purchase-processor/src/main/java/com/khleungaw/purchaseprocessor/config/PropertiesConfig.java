@@ -7,11 +7,20 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @ConfigurationPropertiesScan
 public class PropertiesConfig {
 
+    private String bootstrapAddress;
     private String acceptedPurchaseTopicName;
     private String balanceTopicName;
     private String limitTopicName;
     private String rejectedPurchaseTopicName;
     private String purchaseTopicName;
+
+    public String getBootstrapAddress() {
+        return bootstrapAddress;
+    }
+
+    public void setBootstrapAddress(String bootstrapAddress) {
+        this.bootstrapAddress = bootstrapAddress;
+    }
 
     public String getAcceptedPurchaseTopicName() {
         return acceptedPurchaseTopicName;
