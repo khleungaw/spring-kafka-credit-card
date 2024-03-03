@@ -16,8 +16,7 @@ public class RouterConfig {
 
 	@Bean
 	public RouterFunction<ServerResponse> routes(CreditCardHandler creditCardHandler) {
-		return route(POST("/credit-cards"), creditCardHandler::create)
-			.andRoute(POST("/credit-cards/test"), creditCardHandler::checkUnique);
+		return route(POST("/credit-cards"), creditCardHandler::create);
 	}
 
 }

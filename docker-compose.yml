@@ -4,8 +4,6 @@ services:
     build:
       context: ./accepted-purchase-processor
       dockerfile: Dockerfile
-    ports:
-      - "8084:80"
     environment:
       - KAFKA_ADDRESS=138.2.67.89:9092
       - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
@@ -16,8 +14,6 @@ services:
     build:
       context: ./balance-adjustment-processor
       dockerfile: Dockerfile
-    ports:
-      - "8085:80"
     environment:
       - KAFKA_ADDRESS=138.2.67.89:9092
       - BALANCE_STORE_NAME=balance-store
@@ -42,8 +38,6 @@ services:
     build:
       context: ./purchase-processor
       dockerfile: Dockerfile
-    ports:
-      - "8083:80"
     environment:
       - KAFKA_ADDRESS=138.2.67.89:9092
       - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases

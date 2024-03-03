@@ -62,20 +62,4 @@ public class CreditCardHandler {
 			});
 	}
 
-	public Mono<ServerResponse> checkUnique(ServerRequest req) {
-		return req.body(BodyExtractors.toMono(String.class))
-			.flatMap(cardNo -> {
-				logger.info("Received cardNo: {}", cardNo);
-				return Mono.just(cardNoService.checkCardNo(cardNo));
-			})
-			.flatMap(unique -> {
-				logger.info("CardNo is unique: {}", unique);
-				return ServerResponse.ok().bodyValue(unique);
-			})
-			.onErrorResume(e -> {
-				logger.error("Failed to check cardNo", e);
-				return ServerResponse.badRequest().bodyValue(e.getMessage());
-			});
-	}
-
 }
