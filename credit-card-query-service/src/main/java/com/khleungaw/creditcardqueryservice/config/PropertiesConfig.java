@@ -8,12 +8,9 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class PropertiesConfig {
 
 	private String bootstrapAddress;
-	private String acceptedPurchaseStoreName;
 	private String balanceStoreName;
-	private String balanceAdjustmentStoreName;
 	private String limitStoreName;
-	private String rejectedPurchaseStoreName;
-	private String purchaseStoreName;
+	private String purchaseWithStatusStoreName;
 	private String acceptedPurchaseTopicName;
 	private String balanceTopicName;
 	private String balanceAdjustmentTopicName;
@@ -29,13 +26,6 @@ public class PropertiesConfig {
 		this.bootstrapAddress = bootstrapAddress;
 	}
 
-	public String getAcceptedPurchaseStoreName() {
-		return acceptedPurchaseStoreName;
-	}
-
-	public void setAcceptedPurchaseStoreName(String acceptedPurchaseStoreName) {
-		this.acceptedPurchaseStoreName = acceptedPurchaseStoreName;
-	}
 
 	public String getBalanceStoreName() {
 		return balanceStoreName;
@@ -45,13 +35,6 @@ public class PropertiesConfig {
 		this.balanceStoreName = balanceStoreName;
 	}
 
-	public String getBalanceAdjustmentStoreName() {
-		return balanceAdjustmentStoreName;
-	}
-
-	public void setBalanceAdjustmentStoreName(String balanceAdjustmentStoreName) {
-		this.balanceAdjustmentStoreName = balanceAdjustmentStoreName;
-	}
 
 	public String getLimitStoreName() {
 		return limitStoreName;
@@ -61,20 +44,13 @@ public class PropertiesConfig {
 		this.limitStoreName = limitStoreName;
 	}
 
-	public String getRejectedPurchaseStoreName() {
-		return rejectedPurchaseStoreName;
+
+	public String getPurchaseWithStatusStoreName() {
+		return purchaseWithStatusStoreName;
 	}
 
-	public void setRejectedPurchaseStoreName(String rejectedPurchaseStoreName) {
-		this.rejectedPurchaseStoreName = rejectedPurchaseStoreName;
-	}
-
-	public String getPurchaseStoreName() {
-		return purchaseStoreName;
-	}
-
-	public void setPurchaseStoreName(String purchaseStoreName) {
-		this.purchaseStoreName = purchaseStoreName;
+	public void setPurchaseWithStatusStoreName(String purchaseWithStatusStoreName) {
+		this.purchaseWithStatusStoreName = purchaseWithStatusStoreName;
 	}
 
 	public String getAcceptedPurchaseTopicName() {

@@ -4,14 +4,15 @@ import com.khleungaw.balanceadjustmentprocessor.model.BalanceAdjustment;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
-import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
+import org.apache.kafka.streams.state.ValueAndTimestamp;
 
 import java.math.BigDecimal;
 
 public class BalanceCalculator implements Processor<String, BalanceAdjustment, String, BigDecimal> {
 
     private final String balanceStoreName;
-    private KeyValueStore<String, BigDecimal> balanceStore;
+    private ReadOnlyKeyValueStore<String, ValueAndTimestamp<BigDecimal>> balanceStore;
     private ProcessorContext<String, BigDecimal> context;
 
     public BalanceCalculator(String balanceStoreName) {
@@ -28,7 +29,7 @@ public class BalanceCalculator implements Processor<String, BalanceAdjustment, S
     public void process(Record<String, BalanceAdjustment> record) {
         BalanceAdjustment balanceAdjustment = record.value();
         String cardNo = record.key();
-        BigDecimal currentBalance = balanceStore.get(cardNo);
+        BigDecimal currentBalance = balanceStore.get(cardNo).value();
 
         if (currentBalance == null) {
             currentBalance = BigDecimal.ZERO;

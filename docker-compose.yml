@@ -89,12 +89,9 @@ services:
       - "8083:80"
     environment:
       - KAFKA_ADDRESS=kafka:9092
-      - ACCEPTED_PURCHASE_STORE_NAME=accepted-purchases-store
       - BALANCE_STORE_NAME=balance-store
-      - BALANCE_ADJUSTMENT_STORE_NAME=balance-adjustment-store
       - LIMIT_STORE_NAME=limit-store
-      - REJECTED_PURCHASE_STORE_NAME=rejected-purchases-store
-      - PURCHASE_STORE_NAME=purchases-store
+      - PURCHASE_WITH_STATUS_STORE_NAME=purchases-with-status-store
       - ACCEPTED_PURCHASE_TOPIC_NAME=accepted-purchases
       - BALANCE_TOPIC_NAME=balances
       - BALANCE_ADJUSTMENT_TOPIC_NAME=balance-adjustments
