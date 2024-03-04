@@ -1,5 +1,5 @@
 # Spring Kafka Credit Card
-Credit card transaction processing system built using microservices and event-sourcing architecture
+Credit card transaction processing system built using Spring Boot microservices and event-sourcing architecture with Kafka
 
 ## Running the application
 ```bash
