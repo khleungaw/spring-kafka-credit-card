@@ -8,6 +8,7 @@ import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,17 +23,21 @@ public class CardPurchaseService {
 		this.store = kafkaStreams.store(StoreQueryParameters.fromNameAndType(propertiesConfig.getPurchaseWithStatusStoreName(), QueryableStoreTypes.keyValueStore()));
 	}
 
+	@Nullable
 	public List<PurchaseWithStatus> getCardPurchases(String cardNo) {
 		return store.get(cardNo);
 	}
 
-	public List<KeyValue<String, List<PurchaseWithStatus>>> getAllCardPurchases() {
-		List<KeyValue<String, List<PurchaseWithStatus>>> cardPurchases = new ArrayList<>();
-		try (KeyValueIterator<String, List<PurchaseWithStatus>> all = store.all()) {
-			while (all.hasNext()) {
-				cardPurchases.add(all.next());
+	public List<PurchaseWithStatus> getAllCardPurchases() {
+		List<PurchaseWithStatus> cardPurchases = new ArrayList<>();
+
+		try (KeyValueIterator<String, List<PurchaseWithStatus>> allCardPurchases = store.all()) {
+			while (allCardPurchases.hasNext()) {
+				KeyValue<String, List<PurchaseWithStatus>> cardPurchase = allCardPurchases.next();
+				cardPurchases.addAll(cardPurchase.value);
 			}
 		}
+
 		return cardPurchases;
 	}
 

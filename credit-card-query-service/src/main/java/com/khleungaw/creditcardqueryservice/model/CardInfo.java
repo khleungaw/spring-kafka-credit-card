@@ -4,14 +4,24 @@ import java.math.BigDecimal;
 
 public class CardInfo {
 
+	private String cardNo;
 	private BigDecimal limit;
 	private BigDecimal balance;
 
 	public CardInfo() {}
 
-	public CardInfo(BigDecimal limit, BigDecimal balance) {
+	public CardInfo(String cardNo, BigDecimal limit, BigDecimal balance) {
+		this.cardNo = cardNo;
 		this.limit = limit;
 		this.balance = balance;
+	}
+
+	public String getCardNo() {
+		return cardNo;
+	}
+
+	public void setCardNo(String cardNo) {
+		this.cardNo = cardNo;
 	}
 
 	public BigDecimal getLimit() {
@@ -33,8 +43,8 @@ public class CardInfo {
 	@Override
 	public String toString() {
 		return String.format(
-			"\"limit\"=\"%s\",\"balance\"=\"%s\"",
-			limit, balance
+			"\"cardNo\"=\"%s\",\"limit\"=\"%s\",\"balance\"=\"%s\"",
+			cardNo, limit, balance
 		);
 	}
 

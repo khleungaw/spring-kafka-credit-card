@@ -18,8 +18,6 @@ public class RouterConfig {
 	@Bean
 	public RouterFunction<ServerResponse> routes(CardInfoHandler cardInfoHandler, CardPurchaseHandler cardPurchaseHandler) {
 		return route(GET("/card"), cardInfoHandler::getAllCardInfo)
-			.andRoute(GET("/card/balance"), cardInfoHandler::getAllBalances)
-			.andRoute(GET("/card/limit"), cardInfoHandler::getAllLimits)
 			.andRoute(GET("/card/purchase"), cardPurchaseHandler::getAllCardPurchases)
 			.andRoute(GET("/card/{cardNo}"), cardInfoHandler::getCardInfo)
 			.andRoute(GET("/card/{cardNo}/balance"), cardInfoHandler::getBalance)

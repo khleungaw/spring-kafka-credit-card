@@ -26,7 +26,7 @@ public class CardPurchaseHandler {
 	public Mono<ServerResponse> getCardPurchases(ServerRequest req) {
 		String cardNo = req.pathVariables().get("cardNo");
 		Mono<List<PurchaseWithStatus>> resultMono = Mono.justOrEmpty(cardPurchaseService.getCardPurchases(cardNo));
-		Mono<CardInfo> cardInfoMono = Mono.justOrEmpty(cardInfoService.getCardInfo(cardNo).value);
+		Mono<CardInfo> cardInfoMono = Mono.justOrEmpty(cardInfoService.getCardInfo(cardNo));
 
 		return resultMono
 			.flatMap(purchases -> ServerResponse.ok().bodyValue(purchases))
@@ -38,7 +38,7 @@ public class CardPurchaseHandler {
 	}
 
 	public Mono<ServerResponse> getAllCardPurchases(ServerRequest ignoredReq) {
-		Mono<List<KeyValue<String, List<PurchaseWithStatus>>>> resultMono = Mono.justOrEmpty(cardPurchaseService.getAllCardPurchases());
+		Mono<List<PurchaseWithStatus>> resultMono = Mono.justOrEmpty(cardPurchaseService.getAllCardPurchases());
 		return resultMono.flatMap(purchases -> ServerResponse.ok().bodyValue(purchases));
 	}
 
