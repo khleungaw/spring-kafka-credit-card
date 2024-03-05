@@ -37,8 +37,21 @@ services:
       ./kafka-topics.sh --create --if-not-exists --topic purchases --replication-factor 1 --partitions 2 --bootstrap-server kafka:9092
       "
 
+  reverse-proxy:
+    container_name: reverse-proxy
+    image: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   accepted-purchase-processor:
-    container_name: accepted-purchase-processor
     build:
       context: ./accepted-purchase-processor
       dockerfile: Dockerfile
@@ -51,7 +64,6 @@ services:
         condition: service_completed_successfully
 
   balance-adjustment-processor:
-    container_name: balance-adjustment-processor
     build:
       context: ./balance-adjustment-processor
       dockerfile: Dockerfile
@@ -65,12 +77,13 @@ services:
         condition: service_completed_successfully
 
   credit-card-producer:
-    container_name: credit-card-producer
     build:
       context: ./credit-card-producer
       dockerfile: Dockerfile
-    ports:
-      - "8081:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.credit-card-producer.rule=Host(`credit-card-producer.localhost`)"
+      - "traefik.http.routers.credit-card-producer.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
       - CARD_NO_STORE_NAME=card-no-store
@@ -81,12 +94,13 @@ services:
         condition: service_completed_successfully
 
   credit-card-query-service:
-    container_name: credit-card-query-service
     build:
       context: ./credit-card-query-service
       dockerfile: Dockerfile
-    ports:
-      - "8083:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.credit-card-query-service.rule=Host(`credit-card-query-service.localhost`)"
+      - "traefik.http.routers.credit-card-query-service.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
       - BALANCE_STORE_NAME=balance-store
@@ -103,7 +117,6 @@ services:
         condition: service_completed_successfully
 
   purchase-processor:
-    container_name: purchase-processor
     build:
       context: ./purchase-processor
       dockerfile: Dockerfile
@@ -119,12 +132,14 @@ services:
         condition: service_completed_successfully
 
   purchase-producer:
-    container_name: purchase-producer
     build:
       context: ./purchase-producer
       dockerfile: Dockerfile
-    ports:
-      - "8082:80"
+    scale: 2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.purchase-producer.rule=Host(`purchase-producer.localhost`)"
+      - "traefik.http.routers.purchase-producer.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
       - PURCHASE_TOPIC_NAME=purchases

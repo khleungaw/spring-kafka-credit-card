@@ -15,4 +15,5 @@ RUN mvn --batch-mode --fail-fast package -Dmaven.test.skip
 # Run the application
 FROM eclipse-temurin:17-jre as runtime
 COPY --from=build /build/target/app.jar ./app.jar
+EXPOSE 80
 CMD ["java", "-jar", "./app.jar"]
