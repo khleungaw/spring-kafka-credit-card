@@ -14,10 +14,10 @@ public class Purchase {
 
     public Purchase() {}
 
-    public Purchase(PurchaseDTO dto) {
+    public Purchase(String cardNo, BigDecimal amount) {
         this.id = UUID.randomUUID();
-        this.cardNo = dto.getCardNo();
-        this.amount = new BigDecimal(dto.getAmount());
+        this.cardNo = cardNo;
+        this.amount = amount;
         this.timestamp = new Date();
     }
 

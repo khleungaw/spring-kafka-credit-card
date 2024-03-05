@@ -17,12 +17,12 @@ public class RouterConfig {
 
 	@Bean
 	public RouterFunction<ServerResponse> routes(CardInfoHandler cardInfoHandler, CardPurchaseHandler cardPurchaseHandler) {
-		return route(GET("/card"), cardInfoHandler::getAllCardInfo)
-			.andRoute(GET("/card/purchase"), cardPurchaseHandler::getAllCardPurchases)
-			.andRoute(GET("/card/{cardNo}"), cardInfoHandler::getCardInfo)
-			.andRoute(GET("/card/{cardNo}/balance"), cardInfoHandler::getBalance)
-			.andRoute(GET("/card/{cardNo}/purchase"), cardPurchaseHandler::getCardPurchases)
-			.andRoute(GET("/card/{cardNo}/limit"), cardInfoHandler::getLimit);
+		return route(GET("/api/card"), cardInfoHandler::getAllCardInfo)
+			.andRoute(GET("/api/card/purchase"), cardPurchaseHandler::getAllCardPurchases)
+			.andRoute(GET("/api/card/{cardNo}"), cardInfoHandler::getCardInfo)
+			.andRoute(GET("/api/card/{cardNo}/balance"), cardInfoHandler::getBalance)
+			.andRoute(GET("/api/card/{cardNo}/purchase"), cardPurchaseHandler::getCardPurchases)
+			.andRoute(GET("/api/card/{cardNo}/limit"), cardInfoHandler::getLimit);
 	}
 
 }

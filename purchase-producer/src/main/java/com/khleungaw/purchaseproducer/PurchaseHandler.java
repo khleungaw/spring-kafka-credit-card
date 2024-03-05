@@ -2,7 +2,6 @@ package com.khleungaw.purchaseproducer;
 
 import com.khleungaw.purchaseproducer.config.PropertiesConfig;
 import com.khleungaw.purchaseproducer.model.Purchase;
-import com.khleungaw.purchaseproducer.model.PurchaseDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -13,6 +12,8 @@ import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 
 @Component
 public class PurchaseHandler {
@@ -29,9 +30,10 @@ public class PurchaseHandler {
     }
 
     public Mono<ServerResponse> create(ServerRequest req) {
-        return req.body(BodyExtractors.toMono(PurchaseDTO.class))
-            .flatMap(purchaseDTO -> {
-                Purchase purchase = new Purchase(purchaseDTO);
+        String cardNo = req.pathVariables().get("cardNo");
+        return req.body(BodyExtractors.toMono(BigDecimal.class))
+            .flatMap(amount -> {
+                Purchase purchase = new Purchase(cardNo, amount);
                 logger.info("Received purchase: {}", purchase);
                 return Mono.fromFuture(kafkaTemplate.send(propertiesConfig.getPurchaseTopicName(), purchase.getCardNo(), purchase).toCompletableFuture());
             })

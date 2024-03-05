@@ -1,0 +1,47 @@
+.app {
+    display: flex;
+    flex-direction: column;
+    background-color: #f2f2f2;
+    text-align: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+.app-header {
+    display: flex;
+    min-height: 60px;
+    flex-direction: row;
+    justify-content: left;
+    font-size: calc(10px + 2vmin);
+    color: white;
+    background-color: #1c2028;
+    padding: 0 20px 0 20px;
+}
+
+.app-header-link {
+    display: flex;
+    height: 100%;
+    width: fit-content;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-header-link a {
+    text-decoration: none;
+    color: white;
+}
+
+.app-header-link h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 20px;
+}
+
+.app-header-link:hover {
+    background-color: #3a3f4b;
+}
+
+.app-header-link .selected {
+
+}
+

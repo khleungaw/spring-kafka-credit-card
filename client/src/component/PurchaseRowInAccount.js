@@ -1,0 +1,12 @@
+function PurchaseRow({ transactionID, amount, timestamp, status }) {
+    return (
+        <tr className="overview-page-purchase-row">
+            <td>{transactionID}</td>
+            <td>{amount}</td>
+            <td>{timestamp}</td>
+            <td>{status}</td>
+        </tr>
+    );
+}
+
+export default PurchaseRow;

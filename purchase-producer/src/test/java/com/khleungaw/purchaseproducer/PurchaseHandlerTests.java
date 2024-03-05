@@ -2,7 +2,6 @@ package com.khleungaw.purchaseproducer;
 
 import com.khleungaw.purchaseproducer.config.PropertiesConfig;
 import com.khleungaw.purchaseproducer.model.Purchase;
-import com.khleungaw.purchaseproducer.model.PurchaseDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -55,16 +54,16 @@ public class PurchaseHandlerTests {
 	void testCreateSuccess() {
 		// Arrange
 		String cardNo = "1234567890";
-		PurchaseDTO purchaseDTO = new PurchaseDTO(cardNo, "100.00");
-		CompletableFuture<SendResult<String, Purchase>> purchaseFuture = CompletableFuture.completedFuture(createMockSendResult(cardNo, new Purchase(purchaseDTO)));
+		BigDecimal amount = new BigDecimal(100);
+		CompletableFuture<SendResult<String, Purchase>> purchaseFuture = CompletableFuture.completedFuture(createMockSendResult(cardNo, new Purchase(cardNo, amount)));
 		when(purchaseKafkaTemplate.send(
 			eq(purchaseTopicName),
-			argThat(cardNoArg -> cardNoArg.equals(purchaseDTO.getCardNo())),
+			argThat(cardNoArg -> cardNoArg.equals(cardNo)),
 			argThat(purchase -> purchase.getCardNo().equals(cardNo) && purchase.getAmount().equals(new BigDecimal("100.00"))))
 		)
 		.thenReturn(purchaseFuture);
 
-		ServerRequest request = MockServerRequest.builder().body(Mono.just(purchaseDTO));
+		ServerRequest request = MockServerRequest.builder().body(Mono.just(amount));
 
 		// Act
 		Mono<ServerResponse> responseMono = purchaseHandler.create(request);
@@ -86,17 +85,17 @@ public class PurchaseHandlerTests {
 	void testCreateFailure() {
 		// Arrange
 		String cardNo = "1234567890";
-		PurchaseDTO purchaseDTO = new PurchaseDTO(cardNo, "100.00");
+		BigDecimal amount = new BigDecimal(100);
 		CompletableFuture<SendResult<String, Purchase>> purchaseFuture = new CompletableFuture<>();
 		purchaseFuture.completeExceptionally(new RuntimeException("Failed to send purchase"));
 		when(purchaseKafkaTemplate.send(
 			eq(purchaseTopicName),
-			argThat(cardNoArg -> cardNoArg.equals(purchaseDTO.getCardNo())),
+			argThat(cardNoArg -> cardNoArg.equals(cardNo)),
 			argThat(purchase -> purchase.getCardNo().equals(cardNo) && purchase.getAmount().equals(new BigDecimal("100.00"))))
 		)
 		.thenReturn(purchaseFuture);
 
-		ServerRequest request = MockServerRequest.builder().body(Mono.just(purchaseDTO));
+		ServerRequest request = MockServerRequest.builder().body(Mono.just(amount));
 
 		// Act
 		Mono<ServerResponse> responseMono = purchaseHandler.create(request);

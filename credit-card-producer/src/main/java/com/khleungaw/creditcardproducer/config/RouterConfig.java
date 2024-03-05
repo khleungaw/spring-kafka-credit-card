@@ -16,7 +16,7 @@ public class RouterConfig {
 
 	@Bean
 	public RouterFunction<ServerResponse> routes(CreditCardHandler creditCardHandler) {
-		return route(POST("/credit-cards"), creditCardHandler::create);
+		return route(POST("/api/card"), creditCardHandler::create);
 	}
 
 }

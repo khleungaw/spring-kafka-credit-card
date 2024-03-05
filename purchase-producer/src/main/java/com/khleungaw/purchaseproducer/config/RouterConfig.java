@@ -16,7 +16,7 @@ public class RouterConfig {
 
 	@Bean
 	public RouterFunction<ServerResponse> routes(PurchaseHandler purchaseHandler) {
-		return route(POST("/purchases"), purchaseHandler::create);
+		return route(POST("/api/card/{cardNo}/purchase"), purchaseHandler::create);
 	}
 
 }

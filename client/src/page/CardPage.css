@@ -1,0 +1,88 @@
+.card-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.card-page-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.card-page-form {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+    max-width: 250px;
+}
+
+.card-page-form input,
+.card-page-form button {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.card-page-form button {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.card-page-form button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.card-page-card-info {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-page-card-info > div {
+    margin-right: 20px;
+    font-weight: bold;
+}
+
+.card-page-transaction-history {
+    margin-top: 20px;
+}
+
+.card-page-transaction-history-title {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+
+.card-page-transaction-history-body {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-page-transaction-history-body td,
+.card-page-transaction-history-body th {
+    padding: 12px 15px;
+    border-bottom: 1px solid #40454f;
+}
+
+.card-page-transaction-history-body tr:last-child td {
+    border-bottom: none;
+}
+
+.card-page-transaction-history-body thead td {
+    font-weight: bold;
+}
+
+.card-page-transaction-history-body tbody tr:hover {
+    background-color: #f2f2f2;
+}

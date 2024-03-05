@@ -51,6 +51,17 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
+  front-end-server:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_ENDPOINT=${REACT_APP_API_ENDPOINT}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.front-end-server.rule=Host(`${HOSTNAME}`) && Method(`GET`)"
+      - "traefik.http.routers.front-end-server.entrypoints=web"
+
   accepted-purchase-processor:
     build:
       context: ./accepted-purchase-processor
@@ -82,7 +93,7 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.credit-card-producer.rule=Host(`credit-card-producer.${HOSTNAME}`)"
+      - "traefik.http.routers.credit-card-producer.rule=Host(`${HOSTNAME}`) && Path(`/api/card`) && Method(`POST`)"
       - "traefik.http.routers.credit-card-producer.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
@@ -99,7 +110,7 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.credit-card-query-service.rule=Host(`credit-card-query-service.${HOSTNAME}`)"
+      - "traefik.http.routers.credit-card-query-service.rule=Host(`${HOSTNAME}`) && PathPrefix(`/api/card`) && Method(`GET`)"
       - "traefik.http.routers.credit-card-query-service.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
@@ -138,7 +149,7 @@ services:
     scale: 2
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.purchase-producer.rule=Host(`purchase-producer.${HOSTNAME}`)"
+      - "traefik.http.routers.purchase-producer.rule=Host(`${HOSTNAME}`) && Path(`/api/card/{digit:[0-9]{16}}/purchase`) && Method(`POST`)"
       - "traefik.http.routers.purchase-producer.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092

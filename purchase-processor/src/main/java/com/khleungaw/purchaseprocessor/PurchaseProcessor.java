@@ -63,6 +63,11 @@ public class PurchaseProcessor {
             .split()
             .branch(
                 (cardNo, purchaseWithBalanceAndLimit) -> {
+                    if (purchaseWithBalanceAndLimit.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                        logger.error("Invalid amount in purchase: {}", purchaseWithBalanceAndLimit);
+                        return false;
+                    }
+
                     if (purchaseWithBalanceAndLimit.getBalanceAmount() == null && purchaseWithBalanceAndLimit.getLimitAmount() == null) {
                         logger.info("Unknown card in purchase: {}", purchaseWithBalanceAndLimit);
                         return false;
