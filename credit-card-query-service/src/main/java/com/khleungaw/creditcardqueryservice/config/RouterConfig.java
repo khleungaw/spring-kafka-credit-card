@@ -1,6 +1,6 @@
 package com.khleungaw.creditcardqueryservice.config;
 
-import com.khleungaw.creditcardqueryservice.handler.BalanceHandler;
+import com.khleungaw.creditcardqueryservice.handler.CardInfoHandler;
 import com.khleungaw.creditcardqueryservice.handler.CardPurchaseHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,11 +16,15 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class RouterConfig {
 
 	@Bean
-	public RouterFunction<ServerResponse> routes(BalanceHandler balanceHandler, CardPurchaseHandler cardPurchaseHandler) {
-		return route(GET("/balances/{cardNo}"), balanceHandler::getBalance)
-			.andRoute(GET("/balances"), balanceHandler::getAllBalances)
-			.andRoute(GET("/purchases/{cardNo}"), cardPurchaseHandler::getCardPurchases)
-			.andRoute(GET("/purchases"), cardPurchaseHandler::getAllCardPurchases);
+	public RouterFunction<ServerResponse> routes(CardInfoHandler cardInfoHandler, CardPurchaseHandler cardPurchaseHandler) {
+		return route(GET("/card"), cardInfoHandler::getAllCardInfo)
+			.andRoute(GET("/card/balance"), cardInfoHandler::getAllBalances)
+			.andRoute(GET("/card/limit"), cardInfoHandler::getAllLimits)
+			.andRoute(GET("/card/purchase"), cardPurchaseHandler::getAllCardPurchases)
+			.andRoute(GET("/card/{cardNo}"), cardInfoHandler::getCardInfo)
+			.andRoute(GET("/card/{cardNo}/balance"), cardInfoHandler::getBalance)
+			.andRoute(GET("/card/{cardNo}/purchase"), cardPurchaseHandler::getCardPurchases)
+			.andRoute(GET("/card/{cardNo}/limit"), cardInfoHandler::getLimit);
 	}
 
 }

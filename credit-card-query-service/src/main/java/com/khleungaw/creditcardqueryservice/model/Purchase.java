@@ -48,8 +48,8 @@ public class Purchase {
     @Override
     public String toString() {
         return String.format(
-                "{\"id\"=\"%s\",\"cardNo\"=\"%s\",\"amount\"=\"%s\",\"timestamp\"=\"%s\"}",
-                id, cardNo, amount, timestamp
+            "{\"id\"=\"%s\",\"cardNo\"=\"%s\",\"amount\"=\"%s\",\"timestamp\"=\"%s\"}",
+            id, cardNo, amount, timestamp
         );
     }
 

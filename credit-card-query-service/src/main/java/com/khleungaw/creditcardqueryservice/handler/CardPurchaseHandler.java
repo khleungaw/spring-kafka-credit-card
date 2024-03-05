@@ -1,6 +1,8 @@
 package com.khleungaw.creditcardqueryservice.handler;
 
+import com.khleungaw.creditcardqueryservice.model.CardInfo;
 import com.khleungaw.creditcardqueryservice.model.PurchaseWithStatus;
+import com.khleungaw.creditcardqueryservice.service.CardInfoService;
 import com.khleungaw.creditcardqueryservice.service.CardPurchaseService;
 import org.apache.kafka.streams.KeyValue;
 import org.springframework.stereotype.Component;
@@ -13,29 +15,31 @@ import java.util.List;
 @Component
 public class CardPurchaseHandler {
 
+	private final CardInfoService cardInfoService;
 	private final CardPurchaseService cardPurchaseService;
 
-	public CardPurchaseHandler(CardPurchaseService cardPurchaseService) {
+	public CardPurchaseHandler(CardInfoService cardInfoService, CardPurchaseService cardPurchaseService) {
+		this.cardInfoService = cardInfoService;
 		this.cardPurchaseService = cardPurchaseService;
 	}
 
 	public Mono<ServerResponse> getCardPurchases(ServerRequest req) {
 		String cardNo = req.pathVariables().get("cardNo");
-		List<PurchaseWithStatus> result = cardPurchaseService.getCardPurchases(cardNo);
-		if (result != null && !result.isEmpty()) {
-			return ServerResponse.ok().bodyValue(cardPurchaseService.getCardPurchases(cardNo));
-		} else {
-			return ServerResponse.notFound().build();
-		}
+		Mono<List<PurchaseWithStatus>> resultMono = Mono.justOrEmpty(cardPurchaseService.getCardPurchases(cardNo));
+		Mono<CardInfo> cardInfoMono = Mono.justOrEmpty(cardInfoService.getCardInfo(cardNo).value);
+
+		return resultMono
+			.flatMap(purchases -> ServerResponse.ok().bodyValue(purchases))
+			.switchIfEmpty(cardInfoMono
+				.flatMap(cardInfo -> ServerResponse.ok().bodyValue(List.of())
+				.switchIfEmpty(ServerResponse.notFound().build())
+			)
+		);
 	}
 
 	public Mono<ServerResponse> getAllCardPurchases(ServerRequest ignoredReq) {
-		List<KeyValue<String, List<PurchaseWithStatus>>> result = cardPurchaseService.getAllCardPurchases();
-		if (result != null && !result.isEmpty()) {
-			return ServerResponse.ok().bodyValue(result);
-		} else {
-			return ServerResponse.notFound().build();
-		}
+		Mono<List<KeyValue<String, List<PurchaseWithStatus>>>> resultMono = Mono.justOrEmpty(cardPurchaseService.getAllCardPurchases());
+		return resultMono.flatMap(purchases -> ServerResponse.ok().bodyValue(purchases));
 	}
 
 }
