@@ -82,7 +82,7 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.credit-card-producer.rule=Host(`credit-card-producer.localhost`)"
+      - "traefik.http.routers.credit-card-producer.rule=Host(`credit-card-producer.${HOSTNAME}`)"
       - "traefik.http.routers.credit-card-producer.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
@@ -99,7 +99,7 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.credit-card-query-service.rule=Host(`credit-card-query-service.localhost`)"
+      - "traefik.http.routers.credit-card-query-service.rule=Host(`credit-card-query-service.${HOSTNAME}`)"
       - "traefik.http.routers.credit-card-query-service.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
@@ -138,7 +138,7 @@ services:
     scale: 2
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.purchase-producer.rule=Host(`purchase-producer.localhost`)"
+      - "traefik.http.routers.purchase-producer.rule=Host(`purchase-producer.${HOSTNAME}`)"
       - "traefik.http.routers.purchase-producer.entrypoints=web"
     environment:
       - KAFKA_ADDRESS=kafka:9092
