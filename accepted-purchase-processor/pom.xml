@@ -12,7 +12,7 @@
 	<artifactId>accepted-purchase-processor</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>accepted-purchase-processor</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Processor for accepted purchases</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

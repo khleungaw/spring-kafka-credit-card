@@ -12,7 +12,7 @@
 	<artifactId>credit-card-query-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>credit-card-query-service</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Service for credit card queries</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
