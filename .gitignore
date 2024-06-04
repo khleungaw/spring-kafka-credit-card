@@ -1,2 +1,3 @@
 /.idea/
 */.mvn/wrapper/maven-wrapper.jar
+.env
